@@ -9,6 +9,12 @@
 	import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
 	import CheckCircle from 'lucide-svelte/icons/check-circle';
 	import Package from 'lucide-svelte/icons/package';
+	import {
+		calculateForecast,
+		getSpareParts,
+		type MaintenanceForecast,
+		type SparePart
+	} from '$lib/services/maintenance.service.js';
 
 	interface Engine {
 		id: string;
@@ -17,25 +23,17 @@
 		total_hours: number;
 	}
 
-	interface MaintenanceForecast {
-		engine_id: string;
-		model: string;
-		total_hours: number;
-		next_service_date: string;
-		hours_remaining: number;
-		days_remaining: number;
-		estimated_cost: number;
-		parts_available: boolean;
-		urgency: 'low' | 'medium' | 'high' | 'critical';
-	}
-
 	let forecasts: MaintenanceForecast[] = $state([]);
+	let spareParts: SparePart[] = $state([]);
 	let loading = $state(true);
 	const SERVICE_INTERVAL = 2000;
 
 	onMount(async () => {
 		try {
-			const res = await fetch(`${base}/api/status`);
+			const [res, parts] = await Promise.all([fetch(`${base}/api/status`), getSpareParts()]);
+
+			spareParts = parts;
+
 			if (res.ok) {
 				const data = await res.json();
 				forecasts = data.engines.map((engine: Engine) => calculateForecast(engine));
@@ -47,38 +45,13 @@
 		}
 	});
 
-	function calculateForecast(engine: Engine): MaintenanceForecast {
-		const hoursRemaining = SERVICE_INTERVAL - (engine.total_hours % SERVICE_INTERVAL);
-		const daysRemaining = Math.floor(hoursRemaining / 24);
-		const nextDate = new Date();
-		nextDate.setHours(nextDate.getHours() + hoursRemaining);
-
-		let urgency: MaintenanceForecast['urgency'];
-		if (daysRemaining < 3) urgency = 'critical';
-		else if (daysRemaining < 7) urgency = 'high';
-		else if (daysRemaining < 30) urgency = 'medium';
-		else urgency = 'low';
-
-		return {
-			engine_id: engine.id,
-			model: engine.model,
-			total_hours: engine.total_hours,
-			next_service_date: nextDate.toLocaleDateString(),
-			hours_remaining: hoursRemaining,
-			days_remaining: daysRemaining,
-			estimated_cost: 250000,
-			parts_available: Math.random() > 0.2,
-			urgency
-		};
-	}
-
 	function getUrgencyBadge(urgency: MaintenanceForecast['urgency']) {
-		const variants = {
+		const variants: Record<MaintenanceForecast['urgency'], 'success' | 'warning' | 'danger'> = {
 			low: 'success',
 			medium: 'warning',
 			high: 'warning',
 			critical: 'danger'
-		} as const;
+		};
 		return variants[urgency];
 	}
 
@@ -232,7 +205,7 @@
 					{#if !$isLoading}{$_('maintenance.sparePartsInventory')}{:else}Spare Parts Inventory{/if}
 				</h3>
 				<div class="space-y-3">
-					{#each [{ name: 'Масляный фильтр', quantity: 12, min: 5 }, { name: 'Воздушный фильтр', quantity: 8, min: 4 }, { name: 'Свеча зажигания', quantity: 24, min: 20 }, { name: 'Ремень ГРМ', quantity: 2, min: 2 }, { name: 'Прокладка ГБЦ', quantity: 1, min: 2 }] as part}
+					{#each spareParts as part}
 						<div class="flex items-center justify-between rounded-lg bg-slate-800/50 px-4 py-3">
 							<span class="text-slate-300">{part.name}</span>
 							<div class="flex items-center gap-2">

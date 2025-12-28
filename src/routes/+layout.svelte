@@ -7,6 +7,8 @@
 	import Activity from 'lucide-svelte/icons/activity';
 	import Wrench from 'lucide-svelte/icons/wrench';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
+	import FileText from 'lucide-svelte/icons/file-text';
+	import Settings from 'lucide-svelte/icons/settings';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 
@@ -15,7 +17,8 @@
 	const navItems = [
 		{ href: `${base}/`, label: 'nav.dashboard', icon: Activity },
 		{ href: `${base}/maintenance`, label: 'nav.maintenance', icon: Wrench },
-		{ href: `${base}/economics`, label: 'nav.economics', icon: TrendingUp }
+		{ href: `${base}/economics`, label: 'nav.economics', icon: TrendingUp },
+		{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }
 	];
 </script>
 
@@ -73,6 +76,15 @@
 				<div class="hidden md:block">
 					<LanguageSwitcher />
 				</div>
+
+				<!-- Settings -->
+				<a
+					href="{base}/settings"
+					class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/10 hover:text-white"
+					aria-label="Settings"
+				>
+					<Settings class="h-5 w-5" />
+				</a>
 
 				<!-- User Avatar -->
 				<div class="h-8 w-8 rounded-full border border-white/10 bg-slate-800"></div>

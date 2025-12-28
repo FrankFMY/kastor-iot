@@ -3,7 +3,7 @@
 
 	interface Props {
 		class?: string;
-		variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+		variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
 		size?: 'sm' | 'md' | 'lg';
 		disabled?: boolean;
 		loading?: boolean;
@@ -27,7 +27,8 @@
 		primary: 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-500/20',
 		secondary: 'bg-slate-700 hover:bg-slate-600 text-slate-200',
 		ghost: 'bg-transparent hover:bg-white/5 text-slate-400 hover:text-white',
-		danger: 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-500/20'
+		danger: 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-500/20',
+		outline: 'border border-slate-700 bg-transparent hover:bg-slate-800 text-slate-200'
 	};
 
 	const sizes = {

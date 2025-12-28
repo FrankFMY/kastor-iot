@@ -9,7 +9,8 @@
 		"dashboard": "Панель управления",
 		"maintenance": "Техобслуживание",
 		"economics": "Экономика",
-		"settings": "Настройки"
+		"settings": "Настройки",
+		"reports": "Отчеты"
 	},
 	"common": {
 		"loading": "Загрузка...",

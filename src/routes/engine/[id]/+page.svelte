@@ -47,6 +47,12 @@
 	// Mock Cylinder Temps (4x5 Grid)
 	let cylinderTemps = $state(Array(20).fill(480));
 
+	// History Tab specific state
+	let historyChartContainer = $state<HTMLDivElement>();
+	let historyChartInstance: unknown;
+	let historyRange = $state('1h');
+	let historyLoading = $state(false);
+
 	async function updateData() {
 		try {
 			const res = await fetch(`${base}/api/history/${engineId}`);
@@ -59,7 +65,12 @@
 				loading = false;
 
 				// Update Chart if available
-				if (chartInstance && typeof chartInstance === 'object' && 'setOption' in chartInstance) {
+				if (
+					chartInstance &&
+					typeof chartInstance === 'object' &&
+					'setOption' in chartInstance &&
+					activeTab === 'overview'
+				) {
 					const times = history.map((d) => new Date(d.time).toLocaleTimeString());
 					const temps = history.map((d) => d.temp);
 					const powers = history.map((d) => d.power);
@@ -67,7 +78,10 @@
 					(chartInstance as { setOption: (opts: unknown) => void }).setOption({
 						tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
 						grid: { left: '5%', right: '5%', bottom: '10%', top: '15%' },
-						legend: { data: ['Power (kW)', 'Exhaust Temp (°C)'], textStyle: { color: '#94a3b8' } },
+						legend: {
+							data: ['Power (kW)', 'Exhaust Temp (°C)'],
+							textStyle: { color: '#94a3b8' }
+						},
 						xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b' } },
 						yAxis: [
 							{
@@ -128,6 +142,88 @@
 		}
 	}
 
+	async function loadHistoryData() {
+		if (activeTab !== 'history' || !historyChartContainer) return;
+
+		historyLoading = true;
+		try {
+			const res = await fetch(`${base}/api/history/${engineId}?range=${historyRange}`);
+			if (!res.ok) return;
+			const history: ChartDataPoint[] = await res.json();
+
+			if (!historyChartInstance) {
+				const echarts = await import('echarts');
+				historyChartInstance = echarts.init(historyChartContainer);
+			}
+
+			const times = history.map((d) => new Date(d.time).toLocaleString());
+			const temps = history.map((d) => d.temp);
+			const powers = history.map((d) => d.power);
+
+			(historyChartInstance as { setOption: (opts: unknown) => void }).setOption({
+				tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+				grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+				legend: {
+					data: ['Power (kW)', 'Exhaust Temp (°C)'],
+					textStyle: { color: '#94a3b8' }
+				},
+				xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b' } },
+				yAxis: [
+					{
+						type: 'value',
+						name: 'Power',
+						position: 'left',
+						axisLabel: { color: '#64748b' },
+						splitLine: { lineStyle: { color: '#1e293b' } }
+					},
+					{
+						type: 'value',
+						name: 'Temp',
+						position: 'right',
+						axisLabel: { color: '#64748b' },
+						splitLine: { show: false }
+					}
+				],
+				dataZoom: [
+					{
+						type: 'inside',
+						start: 0,
+						end: 100
+					},
+					{
+						start: 0,
+						end: 100
+					}
+				],
+				series: [
+					{
+						name: 'Power (kW)',
+						type: 'line',
+						data: powers,
+						symbol: 'none',
+						itemStyle: { color: '#06b6d4' },
+						areaStyle: {
+							opacity: 0.1,
+							color: '#06b6d4'
+						}
+					},
+					{
+						name: 'Exhaust Temp (°C)',
+						type: 'line',
+						yAxisIndex: 1,
+						data: temps,
+						symbol: 'none',
+						itemStyle: { color: '#f43f5e' }
+					}
+				]
+			});
+		} catch (e) {
+			console.error(e);
+		} finally {
+			historyLoading = false;
+		}
+	}
+
 	onMount(async () => {
 		// Dynamic import for ECharts
 		const echarts = await import('echarts');
@@ -136,11 +232,7 @@
 		}
 		updateData();
 		interval = setInterval(updateData, 2000);
-		window.addEventListener('resize', () => {
-			if (chartInstance && typeof chartInstance === 'object' && 'resize' in chartInstance) {
-				(chartInstance as { resize: () => void }).resize();
-			}
-		});
+		window.addEventListener('resize', handleResize);
 	});
 
 	onDestroy(() => {
@@ -148,13 +240,52 @@
 		if (chartInstance && typeof chartInstance === 'object' && 'dispose' in chartInstance) {
 			(chartInstance as { dispose: () => void }).dispose();
 		}
+		if (
+			historyChartInstance &&
+			typeof historyChartInstance === 'object' &&
+			'dispose' in historyChartInstance
+		) {
+			(historyChartInstance as { dispose: () => void }).dispose();
+		}
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('resize', handleResize);
+		}
 	});
+
+	function handleResize() {
+		if (chartInstance && typeof chartInstance === 'object' && 'resize' in chartInstance) {
+			(chartInstance as { resize: () => void }).resize();
+		}
+		if (
+			historyChartInstance &&
+			typeof historyChartInstance === 'object' &&
+			'resize' in historyChartInstance
+		) {
+			(historyChartInstance as { resize: () => void }).resize();
+		}
+	}
 
 	function getCylinderColor(temp: number) {
 		if (temp > 600) return 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse';
 		if (temp > 500) return 'bg-amber-500';
 		return 'bg-emerald-500/20';
 	}
+
+	// Watch for tab and range changes to load history
+	$effect(() => {
+		if (activeTab === 'history') {
+			// Small timeout to allow DOM to render container
+			setTimeout(() => {
+				loadHistoryData();
+			}, 50);
+		}
+	});
+
+	$effect(() => {
+		if (activeTab === 'history') {
+			loadHistoryData();
+		}
+	});
 </script>
 
 <div class="space-y-6">
@@ -328,13 +459,29 @@
 		</div>
 	{:else if activeTab === 'history'}
 		<Card>
-			<div class="flex h-64 items-center justify-center text-slate-500">
-				<div class="text-center">
-					<History class="mx-auto mb-2 h-12 w-12 opacity-20" />
-					<p>История работы двигателя</p>
-					<p class="text-xs text-slate-600">Графики наработки, остановов и событий</p>
+			<div class="mb-6 flex items-center justify-between">
+				<h3 class="text-lg font-semibold text-white">History</h3>
+				<div class="flex gap-2">
+					{#each ['1h', '24h', '7d'] as r}
+						<button
+							type="button"
+							class={cn(
+								'rounded px-3 py-1 text-xs font-medium transition',
+								historyRange === r
+									? 'bg-cyan-500 text-white'
+									: 'bg-slate-800 text-slate-400 hover:text-white'
+							)}
+							onclick={() => {
+								historyRange = r;
+								loadHistoryData();
+							}}
+						>
+							{r}
+						</button>
+					{/each}
 				</div>
 			</div>
+			<div class="h-[500px] w-full" bind:this={historyChartContainer}></div>
 		</Card>
 	{:else if activeTab === 'maintenance'}
 		<Card>

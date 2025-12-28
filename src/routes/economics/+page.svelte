@@ -9,6 +9,7 @@
 	import Users from 'lucide-svelte/icons/users';
 	import Building from 'lucide-svelte/icons/building-2';
 	import Zap from 'lucide-svelte/icons/zap';
+	import Calendar from 'lucide-svelte/icons/calendar';
 
 	// Cost breakdown data (mock)
 	const costBreakdown = {
@@ -128,49 +129,90 @@
 	</div>
 
 	<div class="grid gap-6 lg:grid-cols-2">
-		<!-- Cost Structure Pie Chart (CSS-based) -->
-		<Card>
-			<h3 class="mb-6 text-lg font-semibold text-white">
-				{#if !$isLoading}{$_('economics.costStructure')}{:else}Структура себестоимости{/if}
-			</h3>
+		<!-- Cost Structure Pie Chart (Redesigned) -->
+		<Card class="flex flex-col md:flex-row items-center gap-8 p-8 relative overflow-hidden group col-span-1 lg:col-span-2 xl:col-span-1">
+			<!-- Background Glow -->
+			<div class="absolute top-1/2 left-1/4 w-64 h-64 bg-cyan-500/5 blur-[80px] rounded-full -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
-			<div class="flex items-center justify-center gap-8">
+			<div class="flex-1 flex justify-center relative">
 				<!-- Donut Chart -->
-				<div class="relative h-48 w-48">
-					<svg viewBox="0 0 100 100" class="h-full w-full -rotate-90">
+				<div class="relative h-64 w-64">
+					<!-- Outer Glow Ring -->
+					<div class="absolute inset-0 rounded-full border border-white/10 shadow-[0_0_15px_rgba(6,182,212,0.15)]"></div>
+					<div class="absolute inset-8 rounded-full border border-white/5"></div>
+					
+					<svg viewBox="0 0 100 100" class="h-full w-full -rotate-90 drop-shadow-2xl">
+						<!-- Track -->
+						<circle
+							cx="50"
+							cy="50"
+							r="40"
+							fill="transparent"
+							stroke-width="10"
+							class="stroke-slate-800/50"
+						/>
 						{#each costItems as item, i}
 							{@const percentage = (item.value / costTotal) * 100}
+							<!-- Segment -->
 							<circle
 								cx="50"
 								cy="50"
-								r={chartRadius}
+								r="40"
 								fill="transparent"
-								stroke-width="15"
-								class={item.color.replace('bg-', 'stroke-')}
-								stroke-dasharray="{(percentage / 100) * chartCircumference} {chartCircumference}"
-								stroke-dashoffset={-getChartOffset(i)}
+								stroke-width="10"
+								class={cn(item.color.replace('bg-', 'stroke-'), "transition-all duration-1000 ease-out hover:opacity-80")}
+								stroke-dasharray="{(percentage / 100) * (2 * Math.PI * 40) - 4} {2 * Math.PI * 40}" 
+								stroke-dashoffset={-costItems.slice(0, i).reduce((sum, prev) => sum + (prev.value / costTotal) * (2 * Math.PI * 40), 0)}
 								stroke-linecap="round"
+								style="filter: drop-shadow(0 0 4px rgba(0,0,0,0.4));"
 							/>
 						{/each}
 					</svg>
-					<div class="absolute inset-0 flex flex-col items-center justify-center">
-						<span class="text-2xl font-bold text-white">{costBreakdown.cost_per_kwh}</span>
-						<span class="text-xs text-slate-400">₽/кВт·ч</span>
+					<!-- Center Info -->
+					<div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+						<span class="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-2">Total</span>
+						<span class="text-5xl font-bold text-white tracking-tighter filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{costBreakdown.cost_per_kwh}</span>
+						<div class="flex items-center gap-1 mt-2 px-3 py-1 rounded-full bg-slate-800/80 backdrop-blur-sm border border-white/10">
+							<span class="text-[10px] text-slate-300 font-medium">RUB / kWh</span>
+						</div>
 					</div>
 				</div>
+			</div>
 
-				<!-- Legend -->
-				<div class="space-y-3">
+			<!-- Legend with Cards -->
+			<div class="flex-1 w-full">
+				<div class="flex items-center justify-between mb-6">
+					<h3 class="text-lg font-semibold text-white">
+						{#if !$isLoading}{$_('economics.costStructure')}{:else}Структура себестоимости{/if}
+					</h3>
+					<Badge class="bg-slate-900/50 border-slate-700 text-slate-400 pl-2">
+						<Calendar class="mr-1 h-3 w-3" />
+						Dec 2024
+					</Badge>
+				</div>
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
 					{#each costItems as item}
-						<div class="flex items-center gap-3">
-							<div class={cn('h-3 w-3 rounded-full', item.color)}></div>
-							<div class="flex items-center gap-2">
-								<item.icon class="h-4 w-4 text-slate-400" />
-								<span class="text-sm text-slate-300">{item.label}</span>
+						{@const ItemIcon = item.icon}
+						<div class="group/item relative flex items-center gap-3 p-3 rounded-xl bg-slate-900/40 border border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/60 transition-all cursor-default">
+							<!-- Color Line -->
+							<div class={cn("absolute left-0 top-3 bottom-3 w-1 rounded-r-full transition-all group-hover/item:w-1.5", item.color)}></div>
+							
+							<!-- Icon -->
+							<div class={cn('h-9 w-9 rounded-lg flex items-center justify-center ml-2 transition-transform group-hover/item:scale-110 duration-300', item.color.replace('bg-', 'bg-') + '/10', item.color.replace('bg-', 'text-'))}>
+								<ItemIcon class="h-4.5 w-4.5" />
 							</div>
-							<span class="ml-auto font-mono text-sm text-white"
-								>{((item.value / costBreakdown.total) * 100).toFixed(0)}%</span
-							>
+							
+							<!-- Text -->
+							<div class="flex-1 min-w-0">
+								<div class="text-sm font-medium text-slate-200 truncate group-hover/item:text-white transition-colors">{item.label}</div>
+								<div class="text-xs text-slate-500">{item.value.toFixed(2)} ₽</div>
+							</div>
+							
+							<!-- Percent -->
+							<div class="font-mono text-xs font-bold text-slate-300 bg-slate-800/80 px-2 py-1 rounded border border-slate-700/50">
+								{((item.value / costBreakdown.total) * 100).toFixed(0)}%
+							</div>
 						</div>
 					{/each}
 				</div>

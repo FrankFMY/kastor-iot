@@ -204,7 +204,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
+	<div class="grid grid-cols-1 gap-6 xl:grid-cols-4 xl:items-start">
 		<!-- Main Content (Left) -->
 		<div class="space-y-6 xl:col-span-3">
 			<!-- Hero Stats -->
@@ -456,7 +456,7 @@
 
 		<!-- Sidebar (Right) - Event Feed -->
 		<div
-			class="glass-card order-first h-fit rounded-xl p-0 xl:sticky xl:top-20 xl:order-last xl:flex xl:h-[calc(100vh-96px)] xl:flex-col xl:overflow-hidden"
+			class="glass-card order-first h-fit rounded-xl p-0 xl:sticky xl:top-24 xl:order-last xl:flex xl:max-h-[calc(100vh-140px)] xl:flex-col xl:overflow-hidden"
 		>
 			<div class="border-b border-white/5 bg-slate-900/50 p-3 backdrop-blur-xl sm:p-4">
 				<h3 class="flex items-center gap-2 text-sm font-semibold text-slate-200 sm:text-base">

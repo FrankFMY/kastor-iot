@@ -677,6 +677,73 @@
 						</div>
 					{/if}
 				</Card>
+			</div>
+
+			<!-- Center Column: Chart (6 cols) -->
+			<div class="lg:col-span-6">
+				<Card class="flex h-[500px] flex-col p-5">
+					<div class="mb-4 flex items-center justify-between">
+						<h3 class="text-sm font-medium text-slate-400">
+							{$_('engine.performanceCorrelation')}
+						</h3>
+						{#if simulatedData}
+							<div class="text-[10px] font-medium tracking-wider text-rose-400 uppercase">
+								{$_('engine.performanceNarrative', {
+									values: narrativeValues
+								})}
+							</div>
+						{:else}
+							<div class="text-[10px] font-medium tracking-wider text-cyan-400 uppercase">
+								{$_('engine.optimalOperation')}
+							</div>
+						{/if}
+					</div>
+					<div bind:this={chartContainer} class="w-full flex-1"></div>
+				</Card>
+			</div>
+
+			<!-- Right Column: Heatmap & Technical Data (3 cols) -->
+			<div class="space-y-3 sm:space-y-4 lg:col-span-3">
+				<Card>
+					<h3 class="mb-6 flex items-center justify-between text-sm font-medium text-slate-400">
+						{$_('engine.cylinderTemps')}
+						<Badge variant="default">{$_('engine.topView')}</Badge>
+					</h3>
+
+					<div class="grid grid-cols-4 gap-3">
+						{#each cylinderTemps as temp, i (i)}
+							<div
+								class="group relative flex aspect-square items-center justify-center rounded-md text-xs font-bold text-white/50 transition-all duration-500 {getCylinderColor(
+									temp
+								)}"
+							>
+								{i + 1}
+
+								<!-- Tooltip -->
+								<div
+									class="absolute bottom-full z-10 mb-2 hidden rounded border border-white/10 bg-slate-900 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+								>
+									Cyl {i + 1}: {temp.toFixed(0)}°C
+								</div>
+							</div>
+						{/each}
+					</div>
+
+					<div class="mt-8 space-y-2">
+						<div class="flex items-center gap-2 text-xs text-slate-500">
+							<div class="h-3 w-3 rounded bg-emerald-500/20"></div>
+							{$_('engine.normal')}
+						</div>
+						<div class="flex items-center gap-2 text-xs text-slate-500">
+							<div class="h-3 w-3 rounded bg-amber-500"></div>
+							{$_('engine.warning')}
+						</div>
+						<div class="flex items-center gap-2 text-xs text-slate-500">
+							<div class="h-3 w-3 animate-pulse rounded bg-rose-500"></div>
+							{$_('engine.critical')}
+						</div>
+					</div>
+				</Card>
 
 				<Card class="border-slate-800/50 bg-slate-900/50">
 					<h3 class="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
@@ -722,73 +789,6 @@
 								<span class="truncate text-cyan-500/80">{entry.msg}</span>
 							</div>
 						{/each}
-					</div>
-				</Card>
-			</div>
-
-			<!-- Center Column: Chart (6 cols) -->
-			<div class="lg:col-span-6">
-				<Card class="flex h-[500px] flex-col p-5">
-					<div class="mb-4 flex items-center justify-between">
-						<h3 class="text-sm font-medium text-slate-400">
-							{$_('engine.performanceCorrelation')}
-						</h3>
-						{#if simulatedData}
-							<div class="text-[10px] font-medium tracking-wider text-rose-400 uppercase">
-								{$_('engine.performanceNarrative', {
-									values: narrativeValues
-								})}
-							</div>
-						{:else}
-							<div class="text-[10px] font-medium tracking-wider text-cyan-400 uppercase">
-								{$_('engine.optimalOperation')}
-							</div>
-						{/if}
-					</div>
-					<div bind:this={chartContainer} class="w-full flex-1"></div>
-				</Card>
-			</div>
-
-			<!-- Right Column: Heatmap (3 cols) -->
-			<div class="lg:col-span-3">
-				<Card class="h-full">
-					<h3 class="mb-6 flex items-center justify-between text-sm font-medium text-slate-400">
-						{$_('engine.cylinderTemps')}
-						<Badge variant="default">{$_('engine.topView')}</Badge>
-					</h3>
-
-					<div class="grid grid-cols-4 gap-3">
-						{#each cylinderTemps as temp, i (i)}
-							<div
-								class="group relative flex aspect-square items-center justify-center rounded-md text-xs font-bold text-white/50 transition-all duration-500 {getCylinderColor(
-									temp
-								)}"
-							>
-								{i + 1}
-
-								<!-- Tooltip -->
-								<div
-									class="absolute bottom-full z-10 mb-2 hidden rounded border border-white/10 bg-slate-900 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-								>
-									Cyl {i + 1}: {temp.toFixed(0)}°C
-								</div>
-							</div>
-						{/each}
-					</div>
-
-					<div class="mt-8 space-y-2">
-						<div class="flex items-center gap-2 text-xs text-slate-500">
-							<div class="h-3 w-3 rounded bg-emerald-500/20"></div>
-							{$_('engine.normal')}
-						</div>
-						<div class="flex items-center gap-2 text-xs text-slate-500">
-							<div class="h-3 w-3 rounded bg-amber-500"></div>
-							{$_('engine.warning')}
-						</div>
-						<div class="flex items-center gap-2 text-xs text-slate-500">
-							<div class="h-3 w-3 animate-pulse rounded bg-rose-500"></div>
-							{$_('engine.critical')}
-						</div>
 					</div>
 				</Card>
 			</div>

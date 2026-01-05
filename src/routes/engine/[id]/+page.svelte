@@ -459,48 +459,55 @@
 	});
 </script>
 
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-		<div class="flex items-center gap-4">
+	<div class="flex flex-col gap-3 sm:gap-4">
+		<div class="flex items-center gap-3 sm:gap-4">
 			<a
 				href="{base}/"
-				class="rounded-lg p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
+				class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all duration-200 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-95"
 				aria-label="Назад к списку"
 			>
 				<ArrowLeft class="h-5 w-5" />
 			</a>
 			<div>
-				<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
-					<Cpu class="h-6 w-6 text-cyan-400" />
-					{$_('engine.details')}: <span class="text-cyan-400">{engineId?.toUpperCase()}</span>
+				<h1 class="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold text-white">
+					<Cpu class="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
+					<span class="hidden sm:inline">{$_('engine.details')}:</span>
+					<span class="gradient-text-cyan">{engineId?.toUpperCase()}</span>
 				</h1>
 			</div>
 		</div>
 
-		<!-- Tabs -->
-		<div class="flex gap-1 rounded-lg bg-slate-900/50 p-1">
-			{#each tabs as tab (tab.id)}
-				{@const TabIcon = tab.icon}
-				<button
-					type="button"
-					class={cn(
-						'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition',
-						activeTab === tab.id
-							? 'bg-cyan-500/20 text-cyan-400'
-							: 'text-slate-400 hover:bg-white/5 hover:text-white'
-					)}
-					onclick={() => (activeTab = tab.id)}
-				>
-					<TabIcon class="h-5 w-5 md:h-4 md:w-4" />
-					<span class="hidden md:inline">{$_(`engine.tabs.${tab.id}`)}</span>
-				</button>
-			{/each}
+		<!-- Tabs - Scrollable on mobile -->
+		<div class="relative -mx-4 px-4 sm:mx-0 sm:px-0">
+			<div class="flex gap-1 overflow-x-auto rounded-lg bg-slate-900/50 p-1 scrollbar-hide">
+				{#each tabs as tab, i (tab.id)}
+					{@const TabIcon = tab.icon}
+					<button
+						type="button"
+						class={cn(
+							'relative flex shrink-0 items-center gap-1.5 sm:gap-2 rounded-lg px-3 sm:px-4 py-2.5 text-sm font-medium transition-all duration-200',
+							activeTab === tab.id
+								? 'bg-cyan-500/20 text-cyan-400 shadow-lg shadow-cyan-500/10'
+								: 'text-slate-400 hover:bg-white/5 hover:text-white'
+						)}
+						onclick={() => (activeTab = tab.id)}
+						style="animation: fade-in-up 0.3s ease-out {i * 50}ms forwards; opacity: 0;"
+					>
+						<TabIcon class="h-4 w-4 sm:h-5 sm:w-5" />
+						<span class="whitespace-nowrap text-xs sm:text-sm">{$_(`engine.tabs.${tab.id}`)}</span>
+						{#if activeTab === tab.id}
+							<span class="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-cyan-400"></span>
+						{/if}
+					</button>
+				{/each}
+			</div>
 		</div>
 	</div>
 
 	{#if activeTab === 'overview'}
-		<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+		<div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12">
 			<!-- Simulation (Full Width for Demo) -->
 			<div class="lg:col-span-12">
 				<GasQualitySlider
@@ -512,31 +519,31 @@
 			</div>
 
 			<!-- Left Column: KPIs (3 cols) -->
-			<div class="space-y-4 lg:col-span-3">
-				<Card>
-					<div class="mb-4 flex items-center justify-between">
-						<h3 class="text-sm font-medium text-slate-400">{$_('engine.realTimeMetrics')}</h3>
+			<div class="space-y-3 sm:space-y-4 lg:col-span-3">
+				<Card class="card-hover-lift">
+					<div class="mb-3 sm:mb-4 flex items-center justify-between">
+						<h3 class="text-xs sm:text-sm font-medium text-slate-400">{$_('engine.realTimeMetrics')}</h3>
 						{#if simulatedData}
-							<Badge variant="warning" class="animate-pulse">SIMULATION</Badge>
+							<Badge variant="warning" class="animate-pulse text-xs">SIMULATION</Badge>
 						{/if}
 					</div>
 
 					{#if loading}
-						<div class="space-y-6">
+						<div class="space-y-4 sm:space-y-6">
 							<Skeleton height="3rem" />
 							<Skeleton height="3rem" />
 							<Skeleton height="3rem" />
 						</div>
 					{:else}
-						<div class="space-y-6">
+						<div class="space-y-4 sm:space-y-6">
 							<div>
 								<div class="mb-1 flex items-center gap-2 text-xs text-slate-500">
 									<Activity size={14} />
 									{$_('engine.powerOutput')}
 								</div>
-								<div class="font-mono text-2xl font-bold text-white">
+								<div class="font-mono text-xl sm:text-2xl font-bold text-white tabular-nums">
 									{engineData?.power?.toFixed(0) ?? '---'}
-									<span class="text-sm text-slate-500">{$_('common.kw')}</span>
+									<span class="text-xs sm:text-sm text-slate-500">{$_('common.kw')}</span>
 								</div>
 							</div>
 
@@ -547,12 +554,12 @@
 								</div>
 								<div
 									class={cn(
-										'font-mono text-2xl font-bold',
+										'font-mono text-xl sm:text-2xl font-bold tabular-nums transition-colors',
 										(engineData?.temp ?? 0) > 500 ? 'text-rose-400' : 'text-white'
 									)}
 								>
 									{engineData?.temp?.toFixed(0) ?? '---'}
-									<span class="text-sm text-slate-500">{$_('common.celsius')}</span>
+									<span class="text-xs sm:text-sm text-slate-500">{$_('common.celsius')}</span>
 								</div>
 							</div>
 

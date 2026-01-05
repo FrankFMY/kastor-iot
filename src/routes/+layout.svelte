@@ -2,6 +2,7 @@
 	import './layout.css';
 	import '$lib/i18n/index.js';
 	import { base } from '$app/paths';
+	import { page } from '$app/stores';
 	import { _, isLoading } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import Zap from 'lucide-svelte/icons/zap';
@@ -15,6 +16,7 @@
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import { SkipLink } from '$lib/components/ui/index.js';
+	import { cn } from '$lib/utils.js';
 
 	const { children } = $props();
 
@@ -26,8 +28,20 @@
 		{ href: `${base}/admin`, label: 'nav.admin', icon: Shield }
 	];
 
+	let mounted = $state(false);
+
+	// Determine active route
+	function isActive(href: string) {
+		const currentPath = $page.url.pathname;
+		if (href === `${base}/`) {
+			return currentPath === `${base}/` || currentPath === base;
+		}
+		return currentPath.startsWith(href);
+	}
+
 	// Register service worker for PWA
 	onMount(() => {
+		mounted = true;
 		if ('serviceWorker' in navigator) {
 			navigator.serviceWorker.register('/sw.js').catch((err) => {
 				console.warn('Service worker registration failed:', err);
@@ -42,80 +56,126 @@
 		aria-busy="true"
 		aria-live="polite"
 	>
-		<div
-			class="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent"
-			role="status"
-			aria-label="Loading"
-		></div>
+		<div class="flex flex-col items-center gap-4">
+			<div class="relative">
+				<div
+					class="h-12 w-12 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-500"
+				></div>
+				<Zap
+					class="absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-cyan-400"
+				/>
+			</div>
+			<span class="text-sm text-slate-400">Загрузка KASTOR IoT...</span>
+		</div>
 	</div>
 {:else}
-	<div class="min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30">
+	<div
+		class={cn(
+			'min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30',
+			mounted && 'animate-fade-in'
+		)}
+	>
 		<!-- Skip Link for keyboard users -->
 		<SkipLink />
 
 		<!-- Navbar -->
 		<nav
-			class="sticky top-0 z-50 flex items-center justify-between border-b border-white/5 bg-slate-950/80 px-4 py-4 backdrop-blur-md md:px-6"
+			class="sticky top-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl"
 			aria-label="Main navigation"
 		>
-			<div class="flex items-center gap-4 md:gap-8">
-				<!-- Mobile Menu -->
-				<MobileNav />
+			<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
+				<div class="flex items-center gap-4 md:gap-8">
+					<!-- Mobile Menu -->
+					<MobileNav />
 
-				<!-- Logo -->
-				<a href="{base}/" class="flex items-center gap-2 text-xl font-bold tracking-tight">
-					<div
-						class="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 ring-1 ring-cyan-500/50"
+					<!-- Logo -->
+					<a
+						href="{base}/"
+						class="group flex items-center gap-2.5 text-xl font-bold tracking-tight"
 					>
-						<Zap class="h-5 w-5 fill-current" />
-					</div>
-					<span class="bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
-						KASTOR <span class="font-normal text-slate-500">IoT</span>
-					</span>
-				</a>
-
-				<!-- Desktop Navigation -->
-				<div class="hidden gap-1 md:flex">
-					{#each navItems as item (item.href)}
-						{@const Icon = item.icon}
-						<a
-							href={item.href}
-							class="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+						<div
+							class="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 ring-1 ring-cyan-500/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/20 group-hover:ring-cyan-400/60"
 						>
-							<Icon class="h-4 w-4" />
-							{$_(item.label)}
-						</a>
-					{/each}
+							<Zap
+								class="h-5 w-5 fill-current transition-transform duration-300 group-hover:scale-110"
+							/>
+						</div>
+						<span
+							class="hidden bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent sm:inline"
+						>
+							KASTOR <span class="font-normal text-slate-500">IoT</span>
+						</span>
+					</a>
+
+					<!-- Desktop Navigation -->
+					<div class="hidden gap-1 lg:flex">
+						{#each navItems as item (item.href)}
+							{@const Icon = item.icon}
+							{@const active = isActive(item.href)}
+							<a
+								href={item.href}
+								class={cn(
+									'relative flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200',
+									active
+										? 'bg-cyan-500/10 text-cyan-400'
+										: 'text-slate-400 hover:bg-white/5 hover:text-white'
+								)}
+							>
+								<Icon class={cn('h-4 w-4 transition-transform', active && 'scale-110')} />
+								{$_(item.label)}
+								{#if active}
+									<span
+										class="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-cyan-400"
+									></span>
+								{/if}
+							</a>
+						{/each}
+					</div>
 				</div>
-			</div>
 
-			<div class="flex items-center gap-4">
-				<!-- System Status -->
-				<div class="hidden items-center gap-2 text-xs text-slate-500 md:flex">
-					<span class="inline-block h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-					{$_('app.systemOnline')}
+				<div class="flex items-center gap-3">
+					<!-- System Status -->
+					<div
+						class="hidden items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400 md:flex"
+					>
+						<span class="relative flex h-2 w-2">
+							<span
+								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+							></span>
+							<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+						</span>
+						{$_('app.systemOnline')}
+					</div>
+
+					<!-- Language Switcher -->
+					<div class="hidden md:block">
+						<LanguageSwitcher />
+					</div>
+
+					<!-- Settings -->
+					<a
+						href="{base}/settings"
+						class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:rotate-45 hover:bg-white/10 hover:text-white"
+						aria-label="Settings"
+					>
+						<Settings class="h-5 w-5" />
+					</a>
+
+					<!-- User Avatar -->
+					<div
+						class="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border border-white/10 bg-linear-to-br from-cyan-500/20 to-violet-500/20 transition-all duration-200 hover:scale-105 hover:border-white/30"
+					>
+						<div class="absolute inset-0.5 rounded-full bg-slate-800"></div>
+					</div>
 				</div>
-
-				<!-- Language Switcher -->
-				<div class="hidden md:block">
-					<LanguageSwitcher />
-				</div>
-
-				<!-- Settings -->
-				<a
-					href="{base}/settings"
-					class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/10 hover:text-white"
-					aria-label="Settings"
-				>
-					<Settings class="h-5 w-5" />
-				</a>
-
-				<!-- User Avatar -->
-				<div class="h-8 w-8 rounded-full border border-white/10 bg-slate-800"></div>
 			</div>
 		</nav>
 
-		<main id="main-content" class="mx-auto max-w-7xl p-4 md:p-6 lg:p-8" tabindex="-1">
+		<main
+			id="main-content"
+			class="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8 lg:px-8"
+			tabindex="-1"
+		>
 			{@render children()}
 		</main>
 

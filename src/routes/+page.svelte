@@ -208,36 +208,39 @@
 		<!-- Main Content (Left) -->
 		<div class="space-y-6 xl:col-span-3">
 			<!-- Hero Stats -->
-			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			<div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
 				<!-- Fleet Status Card -->
 				<Card class="group relative overflow-hidden">
 					<div
-						class="absolute -top-4 -right-4 opacity-10 transition-transform group-hover:scale-110"
+						class="absolute -top-4 -right-4 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Server size={100} />
+						<Server size={80} class="sm:hidden" />
+						<Server size={100} class="hidden sm:block" />
 					</div>
-					<h3 class="text-sm font-medium text-slate-400">{$_('dashboard.fleetStatus.title')}</h3>
-					<div class="mt-2 flex items-baseline gap-2">
-						<span class="text-4xl font-bold tracking-tight text-white">
+					<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+						{$_('dashboard.fleetStatus.title')}
+					</h3>
+					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
+						<span class="text-2xl font-bold tracking-tight text-white sm:text-4xl">
 							{fleetStatus.online}
 						</span>
-						<span class="text-sm font-medium text-slate-500">/ {fleetStatus.total}</span>
+						<span class="text-xs font-medium text-slate-500 sm:text-sm">/ {fleetStatus.total}</span>
 					</div>
-					<div class="mt-4 flex items-center gap-4 text-xs">
-						<span class="flex items-center gap-1.5 text-emerald-400">
-							<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+					<div class="mt-2 flex flex-wrap items-center gap-2 text-xs sm:mt-4 sm:gap-4">
+						<span class="flex items-center gap-1 text-emerald-400 sm:gap-1.5">
+							<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 sm:h-2 sm:w-2"></span>
 							{fleetStatus.online}
-							{$_('dashboard.fleetStatus.online')}
+							<span class="hidden sm:inline">{$_('dashboard.fleetStatus.online')}</span>
 						</span>
 						{#if fleetStatus.warning > 0}
-							<span class="flex items-center gap-1.5 text-amber-400">
-								<span class="h-2 w-2 rounded-full bg-amber-500"></span>
+							<span class="flex items-center gap-1 text-amber-400 sm:gap-1.5">
+								<span class="h-1.5 w-1.5 rounded-full bg-amber-500 sm:h-2 sm:w-2"></span>
 								{fleetStatus.warning}
 							</span>
 						{/if}
 						{#if fleetStatus.offline > 0}
-							<span class="flex items-center gap-1.5 text-rose-400">
-								<span class="h-2 w-2 rounded-full bg-rose-500"></span>
+							<span class="flex items-center gap-1 text-rose-400 sm:gap-1.5">
+								<span class="h-1.5 w-1.5 rounded-full bg-rose-500 sm:h-2 sm:w-2"></span>
 								{fleetStatus.offline}
 							</span>
 						{/if}
@@ -247,19 +250,23 @@
 				<!-- Power Card -->
 				<Card class="group relative overflow-hidden">
 					<div
-						class="absolute -top-4 -right-4 opacity-10 transition-transform group-hover:scale-110"
+						class="absolute -top-4 -right-4 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Activity size={100} />
+						<Activity size={80} class="sm:hidden" />
+						<Activity size={100} class="hidden sm:block" />
 					</div>
-					<h3 class="text-sm font-medium text-slate-400">{$_('dashboard.totalOutput')}</h3>
-					<div class="mt-2 flex items-baseline gap-2">
-						<span class="text-4xl font-bold tracking-tight text-white">
+					<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+						{$_('dashboard.totalOutput')}
+					</h3>
+					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
+						<span class="text-2xl font-bold tracking-tight text-white tabular-nums sm:text-4xl">
 							<NumberTicker value={data.summary.totalPowerMW * 1000} currency="" />
 						</span>
-						<span class="text-sm font-medium text-slate-500">{$_('common.kw')}</span>
+						<span class="text-xs font-medium text-slate-500 sm:text-sm">{$_('common.kw')}</span>
 					</div>
-					<div class="mt-4 flex items-center gap-2 text-xs text-emerald-400">
-						<ArrowUpRight size={14} />
+					<div class="mt-2 flex items-center gap-1 text-xs text-emerald-400 sm:mt-4 sm:gap-2">
+						<ArrowUpRight size={12} class="sm:hidden" />
+						<ArrowUpRight size={14} class="hidden sm:block" />
 						<span>{Math.round(data.summary.efficiency)}% {$_('dashboard.ofTarget')}</span>
 					</div>
 				</Card>
@@ -267,18 +274,21 @@
 				<!-- Efficiency Card -->
 				<Card class="group relative overflow-hidden">
 					<div
-						class="absolute -top-4 -right-4 opacity-10 transition-transform group-hover:scale-110"
+						class="absolute -top-4 -right-4 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Gauge size={100} />
+						<Gauge size={80} class="sm:hidden" />
+						<Gauge size={100} class="hidden sm:block" />
 					</div>
-					<h3 class="text-sm font-medium text-slate-400">{$_('dashboard.plantEfficiency')}</h3>
-					<div class="mt-2 flex items-baseline gap-2">
-						<span class="text-4xl font-bold tracking-tight text-white">
+					<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+						{$_('dashboard.plantEfficiency')}
+					</h3>
+					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
+						<span class="text-2xl font-bold tracking-tight text-white tabular-nums sm:text-4xl">
 							{data.summary.efficiency.toFixed(1)}
 						</span>
-						<span class="text-sm font-medium text-slate-500">%</span>
+						<span class="text-xs font-medium text-slate-500 sm:text-sm">%</span>
 					</div>
-					<div class="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+					<div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800 sm:mt-4 sm:h-1.5">
 						<div
 							class="h-full bg-linear-to-r from-cyan-500 to-blue-500 transition-all duration-1000"
 							style="width: {Math.min(data.summary.efficiency, 100)}%"
@@ -289,21 +299,23 @@
 				<!-- Money Drain Card -->
 				<Card variant="danger" class="group relative overflow-hidden">
 					<div
-						class="absolute -top-4 -right-4 text-rose-500 opacity-10 transition-transform group-hover:scale-110"
+						class="absolute -top-4 -right-4 text-rose-500 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Banknote size={100} />
+						<Banknote size={80} class="sm:hidden" />
+						<Banknote size={100} class="hidden sm:block" />
 					</div>
-					<h3 class="text-sm font-medium text-rose-200">{$_('dashboard.financialLoss')}</h3>
-					<div class="neon-text-red mt-2 flex items-baseline gap-2 text-rose-400">
-						<span class="text-4xl font-bold tracking-tight">
+					<h3 class="text-xs font-medium text-rose-200 sm:text-sm">
+						{$_('dashboard.financialLoss')}
+					</h3>
+					<div class="neon-text-red mt-1 flex items-baseline gap-1 text-rose-400 sm:mt-2 sm:gap-2">
+						<span class="text-2xl font-bold tracking-tight tabular-nums sm:text-4xl">
 							<NumberTicker value={data.summary.currentLoss} />
 						</span>
 					</div>
-					<div class="mt-4 text-xs text-rose-300/60">
-						{$_('dashboard.potentialMonthly')}: {(
-							(data.summary.currentLoss * 24 * 30) /
-							1000000
-						).toFixed(1)}M ₽
+					<div class="mt-2 text-xs text-rose-300/60 sm:mt-4">
+						<span class="hidden sm:inline">{$_('dashboard.potentialMonthly')}: </span>
+						<span class="sm:hidden">Мес: </span>
+						{((data.summary.currentLoss * 24 * 30) / 1000000).toFixed(1)}M ₽
 					</div>
 				</Card>
 			</div>
@@ -354,29 +366,40 @@
 				</div>
 			</div>
 
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-				{#each data.engines as engine (engine.id)}
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+				{#each data.engines as engine, i (engine.id)}
 					<a
 						href="{base}/engine/{engine.id}"
-						class="glass-card group relative rounded-xl p-5 transition-all hover:-translate-y-1 hover:bg-white/5"
+						class="glass-card card-hover-lift group animate-fade-in relative rounded-xl p-4 opacity-0 sm:p-5"
+						style="animation-delay: {i * 50}ms; animation-fill-mode: forwards;"
 						aria-label="Детали двигателя {engine.id.toUpperCase()}"
 					>
+						<!-- Hover glow effect -->
+						<div
+							class="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+							style="background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(34, 211, 238, 0.06), transparent 40%);"
+						></div>
+
 						<!-- Status Indicator -->
-						<div class="absolute top-5 right-5">
+						<div class="absolute top-4 right-4 sm:top-5 sm:right-5">
 							<StatusIndicator status={engine.status} />
 						</div>
 
-						<div class="mb-4">
-							<div class="text-lg font-bold text-white transition-colors group-hover:text-cyan-400">
+						<div class="mb-3 sm:mb-4">
+							<div
+								class="text-base font-bold text-white transition-colors duration-200 group-hover:text-cyan-400 sm:text-lg"
+							>
 								{engine.id.toUpperCase()}
 							</div>
-							<div class="text-xs text-slate-500">{engine.model}</div>
+							<div class="text-xs text-slate-500 transition-colors group-hover:text-slate-400">
+								{engine.model}
+							</div>
 						</div>
 
-						<div class="grid grid-cols-2 gap-x-2 gap-y-4 text-sm">
+						<div class="grid grid-cols-2 gap-x-2 gap-y-3 text-sm sm:gap-y-4">
 							<div>
 								<div class="mb-1 text-xs text-slate-500">{$_('engine.load')}</div>
-								<div class="font-mono text-white">
+								<div class="font-mono text-white tabular-nums">
 									{engine.power_kw.toFixed(0)}
 									<span class="text-xs text-slate-500">{$_('common.kw')}</span>
 								</div>
@@ -385,7 +408,7 @@
 								<div class="mb-1 text-xs text-slate-500">{$_('engine.profitability')}</div>
 								<div
 									class={cn(
-										'font-mono font-medium',
+										'font-mono font-medium tabular-nums transition-colors',
 										engine.profit_rate > 0 ? 'text-emerald-400' : 'text-rose-400'
 									)}
 								>
@@ -397,8 +420,8 @@
 								<div class="mb-1 text-xs text-slate-500">{$_('engine.temp')}</div>
 								<div
 									class={cn(
-										'font-mono',
-										engine.temp > 500 ? 'animate-pulse text-rose-400' : 'text-slate-300'
+										'font-mono tabular-nums transition-colors',
+										engine.temp > 500 ? 'pulse-glow text-rose-400' : 'text-slate-300'
 									)}
 								>
 									{engine.temp.toFixed(0)}{$_('common.celsius')}
@@ -408,13 +431,20 @@
 								<div class="mb-1 text-xs text-slate-500">{$_('engine.vibration')}</div>
 								<div
 									class={cn(
-										'font-mono',
+										'font-mono tabular-nums transition-colors',
 										engine.vibration > 10 ? 'text-amber-400' : 'text-slate-300'
 									)}
 								>
 									{engine.vibration.toFixed(1)} <span class="text-xs opacity-50">mm/s</span>
 								</div>
 							</div>
+						</div>
+
+						<!-- Arrow indicator -->
+						<div
+							class="absolute right-4 bottom-4 opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
+						>
+							<ArrowUpRight class="h-4 w-4 text-cyan-400" />
 						</div>
 					</a>
 				{/each}
@@ -423,32 +453,42 @@
 
 		<!-- Sidebar (Right) - Event Feed -->
 		<div
-			class="glass-card sticky top-24 flex h-[calc(100vh-120px)] flex-col overflow-hidden rounded-xl p-0"
+			class="glass-card order-first rounded-xl p-0 xl:sticky xl:top-24 xl:order-last xl:flex xl:h-[calc(100vh-120px)] xl:flex-col xl:overflow-hidden"
 		>
-			<div class="border-b border-white/5 bg-slate-900/50 p-4 backdrop-blur-xl">
-				<h3 class="flex items-center gap-2 font-semibold text-slate-200">
+			<div class="border-b border-white/5 bg-slate-900/50 p-3 backdrop-blur-xl sm:p-4">
+				<h3 class="flex items-center gap-2 text-sm font-semibold text-slate-200 sm:text-base">
 					<TriangleAlert size={16} class="text-amber-400" />
 					{$_('dashboard.liveEvents')}
 				</h3>
 			</div>
 
-			<div class="flex-1 space-y-3 overflow-y-auto p-4">
-				{#each data.events as event (event.id)}
+			<div class="max-h-64 space-y-2 overflow-y-auto p-3 sm:p-4 xl:max-h-none xl:flex-1">
+				{#each data.events.slice(0, 10) as event, i (event.id)}
 					<a
 						href="{base}/engine/{event.engine_id}"
-						class="flex gap-3 rounded-lg border border-white/5 bg-white/5 p-3 text-sm transition hover:bg-white/10"
+						class="animate-slide-in-right flex gap-2 rounded-lg border border-white/5 bg-white/5 p-2 text-xs opacity-0 transition-all duration-200 hover:border-white/10 hover:bg-white/10 sm:gap-3 sm:p-3 sm:text-sm"
+						style="animation-delay: {i * 30}ms; animation-fill-mode: forwards;"
 					>
 						<div class="mt-0.5 shrink-0">
-							<div class={cn('h-2 w-2 rounded-full', getEventLevelColor(event.level))}></div>
+							<div
+								class={cn(
+									'h-2 w-2 rounded-full transition-shadow',
+									getEventLevelColor(event.level),
+									event.level === 'error' && 'shadow-md shadow-rose-500/50',
+									event.level === 'warning' && 'shadow-md shadow-amber-500/50'
+								)}
+							></div>
 						</div>
-						<div>
-							<div class="mb-1 text-xs text-slate-500">
+						<div class="min-w-0 flex-1">
+							<div class="mb-0.5 text-xs text-slate-500 sm:mb-1">
 								{new Date(event.time).toLocaleTimeString()}
 								{#if event.engine_id}
-									<span class="ml-2 text-cyan-400">{event.engine_id.toUpperCase()}</span>
+									<span class="ml-1 font-medium text-cyan-400 sm:ml-2"
+										>{event.engine_id.toUpperCase()}</span
+									>
 								{/if}
 							</div>
-							<div class="leading-snug text-slate-200">
+							<div class="line-clamp-2 leading-snug text-slate-200">
 								{event.message}
 							</div>
 						</div>

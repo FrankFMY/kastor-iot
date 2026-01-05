@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { _ } from 'svelte-i18n';
 	import NumberTicker from '$lib/components/NumberTicker.svelte';
-	import { Card, Skeleton, StatusIndicator } from '$lib/components/ui/index.js';
+	import { Card, Skeleton, StatusIndicator, Toast } from '$lib/components/ui/index.js';
 	import { DowntimeTimeline, OEEWidget } from '$lib/components/dashboard/index.js';
 	import Activity from 'lucide-svelte/icons/activity';
 	import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
@@ -28,6 +28,17 @@
 	let useSSE = $state(true);
 	let connectionStatus = $state<'connected' | 'polling' | 'disconnected'>('disconnected');
 	let lastUpdate = $state<Date | null>(null);
+	let showErrorToast = $state(false);
+	let errorMessage = $state('');
+
+	function triggerError(msg: string) {
+		errorMessage = msg;
+		showErrorToast = true;
+		// Auto-hide after 5 seconds
+		setTimeout(() => {
+			showErrorToast = false;
+		}, 5000);
+	}
 
 	async function fetchData() {
 		try {
@@ -36,18 +47,42 @@
 				data = await res.json();
 				lastUpdate = new Date();
 				connectionStatus = 'polling';
+			} else {
+				triggerError('Ошибка получения данных по API');
+				connectionStatus = 'disconnected';
 			}
 		} catch (e) {
 			console.error('Failed to fetch status', e);
+			triggerError('Сетевая ошибка при обновлении данных');
 			connectionStatus = 'disconnected';
 		}
+	}
+
+	function updateDashboardState(newData: any) {
+		if (!newData) return;
+
+		// If it's a diff, merge with existing
+		if (newData.type === 'diff' && data) {
+			data = {
+				engines: newData.engines || data.engines,
+				events: newData.events || data.events,
+				summary: newData.summary || data.summary,
+				timestamp: newData.timestamp || new Date().toISOString()
+			};
+		} else {
+			// Full update
+			data = newData;
+		}
+
+		lastUpdate = new Date();
+		connectionStatus = 'connected';
 	}
 
 	function connectSSE() {
 		if (!browser) return;
 
 		try {
-			connectionStatus = 'polling'; // Initial state while connecting
+			connectionStatus = 'polling';
 			eventSource = new EventSource(`${base}/api/events`);
 
 			eventSource.onopen = () => {
@@ -55,63 +90,36 @@
 				lastUpdate = new Date();
 			};
 
-			// Listen for 'full' events (initial state)
 			eventSource.addEventListener('full', (event) => {
 				try {
-					data = JSON.parse(event.data);
-					lastUpdate = new Date();
-					connectionStatus = 'connected';
+					updateDashboardState(JSON.parse(event.data));
 				} catch (e) {
 					console.error('Failed to parse SSE full data:', e);
+					triggerError('Ошибка парсинга данных (SSE)');
 				}
 			});
 
-			// Listen for 'diff' events (updates)
 			eventSource.addEventListener('diff', (event) => {
 				try {
-					const diffData = JSON.parse(event.data);
-					// For simplicity, treat diff as full update in demo
-					if (diffData.engines) {
-						data = {
-							engines: diffData.engines,
-							events: diffData.events || data?.events || [],
-							summary: diffData.summary ||
-								data?.summary || {
-									totalPowerMW: 0,
-									totalPlannedMW: 0,
-									efficiency: 0,
-									currentLoss: 0,
-									enginesOnline: 0,
-									enginesTotal: 0,
-									enginesWarning: 0,
-									enginesError: 0
-								},
-							timestamp: diffData.timestamp
-						};
-					}
-					lastUpdate = new Date();
-					connectionStatus = 'connected';
+					updateDashboardState(JSON.parse(event.data));
 				} catch (e) {
 					console.error('Failed to parse SSE diff data:', e);
+					triggerError('Ошибка обновления данных (SSE)');
 				}
 			});
 
-			// Fallback for legacy message format
 			eventSource.onmessage = (event) => {
 				try {
-					// Skip heartbeat comments
 					if (event.data.startsWith(':')) return;
-					data = JSON.parse(event.data);
-					lastUpdate = new Date();
-					connectionStatus = 'connected';
+					updateDashboardState(JSON.parse(event.data));
 				} catch (e) {
 					console.error('Failed to parse SSE data:', e);
 				}
 			};
 
 			eventSource.onerror = () => {
-				// Fall back to polling on SSE error
 				console.log('SSE connection failed, falling back to polling');
+				triggerError('SSE соединение потеряно, перехожу на опрос');
 				if (connectionStatus === 'connected') {
 					connectionStatus = 'polling';
 				}
@@ -122,7 +130,6 @@
 				}
 			};
 		} catch {
-			// SSE not supported, use polling
 			useSSE = false;
 			connectionStatus = 'polling';
 			interval = setInterval(fetchData, 2000);
@@ -352,6 +359,7 @@
 					<a
 						href="{base}/engine/{engine.id}"
 						class="glass-card group relative rounded-xl p-5 transition-all hover:-translate-y-1 hover:bg-white/5"
+						aria-label="Детали двигателя {engine.id.toUpperCase()}"
 					>
 						<!-- Status Indicator -->
 						<div class="absolute top-5 right-5">
@@ -452,5 +460,16 @@
 				{/if}
 			</div>
 		</div>
+	</div>
+{/if}
+
+{#if showErrorToast}
+	<div class="animate-fade-in fixed right-6 bottom-6 z-50 w-full max-w-sm">
+		<Toast
+			variant="error"
+			title="Ошибка связи"
+			message={errorMessage}
+			onclose={() => (showErrorToast = false)}
+		/>
 	</div>
 {/if}

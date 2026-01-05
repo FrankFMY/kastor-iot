@@ -61,12 +61,12 @@ setInterval(() => {
 
 async function seedEngines() {
 	const engineList = [
-		{ id: 'gpu-1', model: 'Jenbacher J420', hours: 1450 },
-		{ id: 'gpu-2', model: 'Jenbacher J420', hours: 1980 },
-		{ id: 'gpu-3', model: 'Jenbacher J624', hours: 500 },
-		{ id: 'gpu-4', model: 'Jenbacher J420', hours: 1200 },
-		{ id: 'gpu-5', model: 'Jenbacher J420', hours: 1850 },
-		{ id: 'gpu-6', model: 'Jenbacher J420', hours: 100 }
+		{ id: 'gpu-1', model: 'Weichai 16VCN', hours: 8500 },
+		{ id: 'gpu-2', model: 'Weichai 16VCN', hours: 12300 },
+		{ id: 'gpu-3', model: 'Yuchai YC16V', hours: 9800 },
+		{ id: 'gpu-4', model: 'Yuchai YC16V', hours: 7200 },
+		{ id: 'gpu-5', model: 'Jenbacher J620', hours: 1850 },
+		{ id: 'gpu-6', model: 'Jenbacher J620', hours: 100 }
 	];
 
 	for (const eng of engineList) {
@@ -78,9 +78,15 @@ async function seedEngines() {
 				status: 'ok',
 				total_hours: eng.hours
 			})
-			.onConflictDoNothing();
+			.onConflictDoUpdate({
+				target: engines.id,
+				set: {
+					model: eng.model,
+					total_hours: eng.hours
+				}
+			});
 	}
-	console.log('[KASTOR] Engines seeded');
+	console.log('[KASTOR] Engines seeded and synced');
 }
 
 // Create alert from telemetry threshold violation

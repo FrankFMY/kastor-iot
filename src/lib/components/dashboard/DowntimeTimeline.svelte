@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 	import { _ } from 'svelte-i18n';
 	import { Card, Badge } from '$lib/components/ui/index.js';
 	import Clock from 'lucide-svelte/icons/clock';
@@ -8,8 +10,8 @@
 	interface Downtime {
 		id: string;
 		engine_id: string;
-		start_time: Date;
-		end_time: Date | null;
+		start_time: string | Date;
+		end_time: string | Date | null;
 		reason: string | null;
 		loss_rub: number | null;
 	}
@@ -20,8 +22,12 @@
 
 	const { class: className = '' }: Props = $props();
 
-	// Mock data for demo
-	const downtimes: Downtime[] = [
+	// State for data
+	let downtimes = $state<Downtime[]>([]);
+	let loading = $state(true);
+
+	// Mock data for fallback
+	const mockDowntimes: Downtime[] = [
 		{
 			id: '1',
 			engine_id: 'gpu-2',
@@ -48,11 +54,37 @@
 		}
 	];
 
-	const totalLosses = downtimes.reduce((sum, d) => sum + (d.loss_rub || 0), 0);
+	async function fetchDowntimes() {
+		try {
+			const res = await fetch(`${base}/api/downtimes`);
+			if (res.ok) {
+				const data = await res.json();
+				if (data.length > 0) {
+					downtimes = data;
+				} else {
+					downtimes = mockDowntimes;
+				}
+			} else {
+				downtimes = mockDowntimes;
+			}
+		} catch (e) {
+			console.error('Failed to fetch downtimes', e);
+			downtimes = mockDowntimes;
+		} finally {
+			loading = false;
+		}
+	}
 
-	function formatDuration(start: Date, end: Date | null): string {
-		const endTime = end || new Date();
-		const diffMs = endTime.getTime() - start.getTime();
+	onMount(() => {
+		fetchDowntimes();
+	});
+
+	const totalLosses = $derived(downtimes.reduce((sum, d) => sum + (d.loss_rub || 0), 0));
+
+	function formatDuration(start: string | Date, end: string | Date | null): string {
+		const startTime = typeof start === 'string' ? new Date(start) : start;
+		const endTime = end ? (typeof end === 'string' ? new Date(end) : end) : new Date();
+		const diffMs = endTime.getTime() - startTime.getTime();
 		const hours = Math.floor(diffMs / (1000 * 60 * 60));
 		const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 		// Using explicit hour/min abbreviations to avoid font rendering issues
@@ -60,6 +92,11 @@
 			return hours + ' ч';
 		}
 		return hours + ' ч ' + minutes + ' мин';
+	}
+
+	function formatTime(date: string | Date) {
+		const d = typeof date === 'string' ? new Date(date) : date;
+		return d.toLocaleTimeString();
 	}
 </script>
 
@@ -78,52 +115,56 @@
 	</div>
 
 	<div class="space-y-3">
-		{#each downtimes as dt (dt.id)}
-			<div
-				class="relative flex gap-4 rounded-lg border border-white/5 bg-white/5 p-3 transition hover:bg-white/10"
-			>
-				<!-- Timeline line -->
-				<div class="flex flex-col items-center">
-					{#if dt.end_time}
-						<CheckCircle class="h-5 w-5 text-emerald-400" />
-					{:else}
-						<AlertCircle class="h-5 w-5 animate-pulse text-rose-400" />
-					{/if}
-					<div class="mt-2 h-full w-px bg-slate-700"></div>
-				</div>
+		{#if loading}
+			<div class="py-10 text-center text-slate-500">Загрузка...</div>
+		{:else}
+			{#each downtimes as dt (dt.id)}
+				<div
+					class="relative flex gap-4 rounded-lg border border-white/5 bg-white/5 p-3 transition hover:bg-white/10"
+				>
+					<!-- Timeline line -->
+					<div class="flex flex-col items-center">
+						{#if dt.end_time}
+							<CheckCircle class="h-5 w-5 text-emerald-400" />
+						{:else}
+							<AlertCircle class="h-5 w-5 animate-pulse text-rose-400" />
+						{/if}
+						<div class="mt-2 h-full w-px bg-slate-700"></div>
+					</div>
 
-				<div class="flex-1">
-					<div class="mb-1 flex items-center justify-between">
-						<div class="flex items-center gap-2">
-							<span class="font-bold text-cyan-400">{dt.engine_id.toUpperCase()}</span>
-							{#if !dt.end_time}
-								<Badge variant="danger" pulse>В процессе</Badge>
-							{:else}
-								<Badge variant="success">Завершен</Badge>
-							{/if}
+					<div class="flex-1">
+						<div class="mb-1 flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<span class="font-bold text-cyan-400">{dt.engine_id.toUpperCase()}</span>
+								{#if !dt.end_time}
+									<Badge variant="danger" pulse>В процессе</Badge>
+								{:else}
+									<Badge variant="success">Завершен</Badge>
+								{/if}
+							</div>
+							<span class="font-mono text-sm text-rose-400">
+								-{(dt.loss_rub || 0).toLocaleString()} ₽
+							</span>
 						</div>
-						<span class="font-mono text-sm text-rose-400">
-							-{(dt.loss_rub || 0).toLocaleString()} ₽
-						</span>
-					</div>
 
-					<p class="mb-2 text-sm text-slate-300">{dt.reason || 'Причина не указана'}</p>
+						<p class="mb-2 text-sm text-slate-300">{dt.reason || 'Причина не указана'}</p>
 
-					<div class="flex items-center gap-4 text-xs text-slate-500">
-						<span>{dt.start_time.toLocaleTimeString()}</span>
-						<span>→</span>
-						<span>{dt.end_time?.toLocaleTimeString() || 'сейчас'}</span>
-						<span class="text-slate-400">({formatDuration(dt.start_time, dt.end_time)})</span>
+						<div class="flex items-center gap-4 text-xs text-slate-500">
+							<span>{formatTime(dt.start_time)}</span>
+							<span>→</span>
+							<span>{dt.end_time ? formatTime(dt.end_time) : 'сейчас'}</span>
+							<span class="text-slate-400">({formatDuration(dt.start_time, dt.end_time)})</span>
+						</div>
 					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
 
-		{#if downtimes.length === 0}
-			<div class="py-8 text-center text-slate-500">
-				<CheckCircle class="mx-auto mb-2 h-8 w-8 text-emerald-400/50" />
-				<p>Нет простоев за период</p>
-			</div>
+			{#if downtimes.length === 0}
+				<div class="py-8 text-center text-slate-500">
+					<CheckCircle class="mx-auto mb-2 h-8 w-8 text-emerald-400/50" />
+					<p>Нет простоев за период</p>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </Card>

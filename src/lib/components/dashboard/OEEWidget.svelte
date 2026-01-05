@@ -135,10 +135,15 @@
 					<div class="text-xs text-slate-500">Выполнение плана</div>
 				</div>
 				<div>
-					<div class="text-2xl font-bold text-cyan-400">
+					<div
+						class={cn(
+							'text-2xl font-bold',
+							1 - specificConsumption / targetConsumption > 0 ? 'text-cyan-400' : 'text-rose-400'
+						)}
+					>
 						{((1 - specificConsumption / targetConsumption) * 100).toFixed(1)}%
 					</div>
-					<div class="text-xs text-slate-500">Экономия газа</div>
+					<div class="text-xs text-slate-500">{$_('oee.gasSavings')}</div>
 				</div>
 			</div>
 		</div>

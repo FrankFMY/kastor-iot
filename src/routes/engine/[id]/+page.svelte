@@ -89,7 +89,6 @@
 	let historyChartContainer = $state<HTMLDivElement>();
 	let historyChartInstance: unknown;
 	let historyRange = $state('1h');
-	let _historyLoading = $state(false);
 	let historyData: ChartDataPoint[] = $state([]);
 
 	// State to track if simulation is active (gas quality < 1.0)
@@ -256,7 +255,6 @@
 	async function loadHistoryData() {
 		if (activeTab !== 'history' || !historyChartContainer) return;
 
-		_historyLoading = true;
 		try {
 			const [res, eventsRes] = await Promise.all([
 				fetch(`${base}/api/history/${engineId}?range=${historyRange}`),
@@ -375,8 +373,6 @@
 			});
 		} catch (e) {
 			console.error(e);
-		} finally {
-			_historyLoading = false;
 		}
 	}
 
@@ -454,16 +450,11 @@
 	// Watch for tab and range changes to load history
 	$effect(() => {
 		if (activeTab === 'history') {
-			// Small timeout to allow DOM to render container
-			setTimeout(() => {
+			// Small timeout to allow DOM to render container if needed
+			const t = setTimeout(() => {
 				loadHistoryData();
 			}, 50);
-		}
-	});
-
-	$effect(() => {
-		if (activeTab === 'history') {
-			loadHistoryData();
+			return () => clearTimeout(t);
 		}
 	});
 </script>
@@ -475,6 +466,7 @@
 			<a
 				href="{base}/"
 				class="rounded-lg p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
+				aria-label="Назад к списку"
 			>
 				<ArrowLeft class="h-5 w-5" />
 			</a>

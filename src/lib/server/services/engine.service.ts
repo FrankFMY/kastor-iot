@@ -1,9 +1,16 @@
 import { db } from '../db/index.js';
-import { engines, telemetry } from '../db/schema.js';
-import { sql } from 'drizzle-orm';
+import { engines, telemetry, downtimes } from '../db/schema.js';
+import { sql, desc } from 'drizzle-orm';
 import type { Engine, EngineWithMetrics, DashboardSummary } from '$lib/types/index.js';
 import { ENGINE_CONSTANTS } from '$lib/types/index.js';
 import { getLatestEvents } from './event.service.js';
+
+/**
+ * Get recent downtimes
+ */
+export async function getRecentDowntimes(limit: number = 5) {
+	return db.select().from(downtimes).orderBy(desc(downtimes.start_time)).limit(limit);
+}
 
 interface TelemetryRow {
 	engine_id: string;

@@ -418,14 +418,17 @@
 							</div>
 							<div>
 								<div class="mb-1 text-xs text-slate-500">{$_('engine.temp')}</div>
-								<div
-									class={cn(
-										'font-mono tabular-nums transition-colors',
-										engine.temp > 500 ? 'pulse-glow text-rose-400' : 'text-slate-300'
-									)}
-								>
-									{engine.temp.toFixed(0)}{$_('common.celsius')}
-								</div>
+								{#if engine.temp > 500}
+									<div class="temp-warning inline-block">
+										<span class="font-mono font-semibold text-rose-400 tabular-nums">
+											{engine.temp.toFixed(0)}{$_('common.celsius')}
+										</span>
+									</div>
+								{:else}
+									<div class="font-mono text-slate-300 tabular-nums transition-colors">
+										{engine.temp.toFixed(0)}{$_('common.celsius')}
+									</div>
+								{/if}
 							</div>
 							<div>
 								<div class="mb-1 text-xs text-slate-500">{$_('engine.vibration')}</div>
@@ -453,7 +456,7 @@
 
 		<!-- Sidebar (Right) - Event Feed -->
 		<div
-			class="glass-card order-first rounded-xl p-0 xl:sticky xl:top-24 xl:order-last xl:flex xl:h-[calc(100vh-120px)] xl:flex-col xl:overflow-hidden"
+			class="glass-card order-first h-fit rounded-xl p-0 xl:sticky xl:top-20 xl:order-last xl:flex xl:h-[calc(100vh-96px)] xl:flex-col xl:overflow-hidden"
 		>
 			<div class="border-b border-white/5 bg-slate-900/50 p-3 backdrop-blur-xl sm:p-4">
 				<h3 class="flex items-center gap-2 text-sm font-semibold text-slate-200 sm:text-base">

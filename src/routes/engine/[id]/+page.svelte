@@ -190,60 +190,119 @@
 			const temps = history.map((d) => d.temp);
 			const powers = history.map((d) => d.power);
 
-			(chartInstance as { setOption: (opts: unknown) => void }).setOption({
-				tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-				grid: { left: '5%', right: '5%', bottom: '10%', top: '15%' },
-				legend: {
-					data: ['Power (kW)', 'Exhaust Temp (°C)'],
-					textStyle: { color: '#94a3b8' }
-				},
-				xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b' } },
-				yAxis: [
-					{
-						type: 'value',
-						name: 'Power',
-						position: 'left',
-						axisLabel: { color: '#64748b' },
-						splitLine: { lineStyle: { color: '#1e293b' } }
+			(
+				chartInstance as {
+					setOption: (opts: unknown, notMerge?: boolean, lazyUpdate?: boolean) => void;
+				}
+			).setOption(
+				{
+					animation: true,
+					animationDuration: 800,
+					animationEasing: 'cubicOut',
+					tooltip: {
+						trigger: 'axis',
+						axisPointer: {
+							type: 'cross',
+							lineStyle: { color: '#475569' }
+						},
+						backgroundColor: 'rgba(15, 23, 42, 0.95)',
+						borderColor: 'rgba(255,255,255,0.1)',
+						textStyle: { color: '#e2e8f0' }
 					},
-					{
-						type: 'value',
-						name: 'Temp',
-						position: 'right',
-						axisLabel: { color: '#64748b' },
-						splitLine: { show: false }
-					}
-				],
-				series: [
-					{
-						name: 'Power (kW)',
-						type: 'bar',
-						data: powers,
-						itemStyle: {
-							color: {
-								type: 'linear',
-								x: 0,
-								y: 0,
-								x2: 0,
-								y2: 1,
-								colorStops: [
-									{ offset: 0, color: '#06b6d4' },
-									{ offset: 1, color: '#3b82f6' }
-								]
+					grid: { left: '3%', right: '4%', bottom: '8%', top: '15%', containLabel: true },
+					legend: {
+						data: ['Мощность (кВт)', 'Температура (°C)'],
+						textStyle: { color: '#94a3b8' },
+						icon: 'roundRect'
+					},
+					xAxis: {
+						type: 'category',
+						data: times,
+						axisLabel: { color: '#64748b', fontSize: 10 },
+						axisLine: { lineStyle: { color: '#334155' } },
+						boundaryGap: false
+					},
+					yAxis: [
+						{
+							type: 'value',
+							name: 'Мощность',
+							nameTextStyle: { color: '#06b6d4' },
+							position: 'left',
+							min: (value: { min: number }) => Math.floor(value.min * 0.95),
+							max: (value: { max: number }) => Math.ceil(value.max * 1.02),
+							axisLabel: { color: '#64748b', fontSize: 10 },
+							splitLine: { lineStyle: { color: '#1e293b', type: 'dashed' } },
+							axisLine: { show: true, lineStyle: { color: '#06b6d4' } }
+						},
+						{
+							type: 'value',
+							name: 'Темп.',
+							nameTextStyle: { color: '#f43f5e' },
+							position: 'right',
+							min: (value: { min: number }) => Math.floor(value.min * 0.98),
+							max: (value: { max: number }) => Math.ceil(value.max * 1.02),
+							axisLabel: { color: '#64748b', fontSize: 10 },
+							splitLine: { show: false },
+							axisLine: { show: true, lineStyle: { color: '#f43f5e' } }
+						}
+					],
+					series: [
+						{
+							name: 'Мощность (кВт)',
+							type: 'line',
+							data: powers,
+							smooth: 0.4,
+							symbol: 'none',
+							lineStyle: {
+								color: '#06b6d4',
+								width: 2.5,
+								shadowColor: 'rgba(6, 182, 212, 0.3)',
+								shadowBlur: 8
+							},
+							areaStyle: {
+								color: {
+									type: 'linear',
+									x: 0,
+									y: 0,
+									x2: 0,
+									y2: 1,
+									colorStops: [
+										{ offset: 0, color: 'rgba(6, 182, 212, 0.25)' },
+										{ offset: 0.7, color: 'rgba(6, 182, 212, 0.05)' },
+										{ offset: 1, color: 'rgba(6, 182, 212, 0)' }
+									]
+								}
+							}
+						},
+						{
+							name: 'Температура (°C)',
+							type: 'line',
+							yAxisIndex: 1,
+							data: temps,
+							smooth: 0.4,
+							symbol: 'circle',
+							symbolSize: 4,
+							showSymbol: false,
+							lineStyle: {
+								color: '#f43f5e',
+								width: 2,
+								shadowColor: 'rgba(244, 63, 94, 0.3)',
+								shadowBlur: 6
+							},
+							itemStyle: { color: '#f43f5e' },
+							emphasis: {
+								focus: 'series',
+								itemStyle: {
+									borderWidth: 2,
+									borderColor: '#fff'
+								}
 							}
 						}
-					},
-					{
-						name: 'Exhaust Temp (°C)',
-						type: 'line',
-						yAxisIndex: 1,
-						data: temps,
-						smooth: true,
-						lineStyle: { color: '#f43f5e', width: 3 },
-						symbol: 'none'
-					}
-				]
-			});
+					]
+				},
+				false,
+				true
+			); // notMerge: false, lazyUpdate: true for smooth transitions
 		}
 
 		// Special case for Cylinder 12 overheating visualization
@@ -471,8 +530,8 @@
 				<ArrowLeft class="h-5 w-5" />
 			</a>
 			<div>
-				<h1 class="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold text-white">
-					<Cpu class="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
+				<h1 class="flex items-center gap-2 text-xl font-bold text-white sm:gap-3 sm:text-2xl">
+					<Cpu class="h-5 w-5 text-cyan-400 sm:h-6 sm:w-6" />
 					<span class="hidden sm:inline">{$_('engine.details')}:</span>
 					<span class="gradient-text-cyan">{engineId?.toUpperCase()}</span>
 				</h1>
@@ -481,13 +540,13 @@
 
 		<!-- Tabs - Scrollable on mobile -->
 		<div class="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-			<div class="flex gap-1 overflow-x-auto rounded-lg bg-slate-900/50 p-1 scrollbar-hide">
+			<div class="scrollbar-hide flex gap-1 overflow-x-auto rounded-lg bg-slate-900/50 p-1">
 				{#each tabs as tab, i (tab.id)}
 					{@const TabIcon = tab.icon}
 					<button
 						type="button"
 						class={cn(
-							'relative flex shrink-0 items-center gap-1.5 sm:gap-2 rounded-lg px-3 sm:px-4 py-2.5 text-sm font-medium transition-all duration-200',
+							'relative flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 sm:gap-2 sm:px-4',
 							activeTab === tab.id
 								? 'bg-cyan-500/20 text-cyan-400 shadow-lg shadow-cyan-500/10'
 								: 'text-slate-400 hover:bg-white/5 hover:text-white'
@@ -496,9 +555,11 @@
 						style="animation: fade-in-up 0.3s ease-out {i * 50}ms forwards; opacity: 0;"
 					>
 						<TabIcon class="h-4 w-4 sm:h-5 sm:w-5" />
-						<span class="whitespace-nowrap text-xs sm:text-sm">{$_(`engine.tabs.${tab.id}`)}</span>
+						<span class="text-xs whitespace-nowrap sm:text-sm">{$_(`engine.tabs.${tab.id}`)}</span>
 						{#if activeTab === tab.id}
-							<span class="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-cyan-400"></span>
+							<span
+								class="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-cyan-400"
+							></span>
 						{/if}
 					</button>
 				{/each}
@@ -521,8 +582,10 @@
 			<!-- Left Column: KPIs (3 cols) -->
 			<div class="space-y-3 sm:space-y-4 lg:col-span-3">
 				<Card class="card-hover-lift">
-					<div class="mb-3 sm:mb-4 flex items-center justify-between">
-						<h3 class="text-xs sm:text-sm font-medium text-slate-400">{$_('engine.realTimeMetrics')}</h3>
+					<div class="mb-3 flex items-center justify-between sm:mb-4">
+						<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+							{$_('engine.realTimeMetrics')}
+						</h3>
 						{#if simulatedData}
 							<Badge variant="warning" class="animate-pulse text-xs">SIMULATION</Badge>
 						{/if}
@@ -541,9 +604,9 @@
 									<Activity size={14} />
 									{$_('engine.powerOutput')}
 								</div>
-								<div class="font-mono text-xl sm:text-2xl font-bold text-white tabular-nums">
+								<div class="font-mono text-xl font-bold text-white tabular-nums sm:text-2xl">
 									{engineData?.power?.toFixed(0) ?? '---'}
-									<span class="text-xs sm:text-sm text-slate-500">{$_('common.kw')}</span>
+									<span class="text-xs text-slate-500 sm:text-sm">{$_('common.kw')}</span>
 								</div>
 							</div>
 
@@ -554,12 +617,12 @@
 								</div>
 								<div
 									class={cn(
-										'font-mono text-xl sm:text-2xl font-bold tabular-nums transition-colors',
+										'font-mono text-xl font-bold tabular-nums transition-colors sm:text-2xl',
 										(engineData?.temp ?? 0) > 500 ? 'text-rose-400' : 'text-white'
 									)}
 								>
 									{engineData?.temp?.toFixed(0) ?? '---'}
-									<span class="text-xs sm:text-sm text-slate-500">{$_('common.celsius')}</span>
+									<span class="text-xs text-slate-500 sm:text-sm">{$_('common.celsius')}</span>
 								</div>
 							</div>
 

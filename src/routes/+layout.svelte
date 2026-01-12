@@ -3,7 +3,7 @@
 	import '$lib/i18n/index.js';
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
-	import { _, isLoading } from 'svelte-i18n';
+	import { _, isLoading, locale } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import Zap from 'lucide-svelte/icons/zap';
 	import Activity from 'lucide-svelte/icons/activity';
@@ -51,7 +51,7 @@
 	});
 </script>
 
-{#if $isLoading}
+{#if $isLoading || !$locale}
 	<div
 		class="flex h-screen items-center justify-center bg-slate-950"
 		aria-busy="true"
@@ -66,7 +66,7 @@
 					class="absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-cyan-400"
 				/>
 			</div>
-			<span class="text-sm text-slate-400">{$_('app.loading')}</span>
+			<span class="text-sm text-slate-400">{$locale ? $_('app.loading') : 'Loading...'}</span>
 		</div>
 	</div>
 {:else}
@@ -85,14 +85,14 @@
 			aria-label="Main navigation"
 		>
 			<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
-				<div class="flex items-center gap-4 md:gap-8">
+				<div class="flex items-center gap-3 md:gap-6">
 					<!-- Mobile Menu -->
 					<MobileNav />
 
 					<!-- Logo -->
 					<a
 						href="{base}/"
-						class="group flex items-center gap-2.5 text-xl font-bold tracking-tight"
+						class="group flex shrink-0 items-center gap-2.5 text-xl font-bold tracking-tight"
 					>
 						<div
 							class="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 ring-1 ring-cyan-500/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/20 group-hover:ring-cyan-400/60"
@@ -109,21 +109,21 @@
 					</a>
 
 					<!-- Desktop Navigation -->
-					<div class="hidden gap-1 lg:flex">
+					<div class="hidden gap-0.5 lg:flex">
 						{#each navItems as item (item.href)}
 							{@const Icon = item.icon}
 							{@const active = isActive(item.href)}
 							<a
 								href={item.href}
 								class={cn(
-									'relative flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200',
+									'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
 									active
 										? 'bg-cyan-500/10 text-cyan-400'
 										: 'text-slate-400 hover:bg-white/5 hover:text-white'
 								)}
 							>
 								<Icon class={cn('h-4 w-4 transition-transform', active && 'scale-110')} />
-								{$_(item.label)}
+								<span class="whitespace-nowrap">{$_(item.label)}</span>
 								{#if active}
 									<span
 										class="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-cyan-400"
@@ -137,13 +137,13 @@
 				<div class="flex items-center gap-3">
 					<!-- System Status -->
 					<div
-						class="hidden items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400 md:flex"
+						class="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-[11px] leading-none font-medium whitespace-nowrap text-emerald-400 md:flex"
 					>
-						<span class="relative flex h-2 w-2">
+						<span class="relative flex h-1.5 w-1.5 shrink-0">
 							<span
 								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
 							></span>
-							<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+							<span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
 						</span>
 						{$_('app.systemOnline')}
 					</div>

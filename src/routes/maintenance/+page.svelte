@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { _, isLoading } from 'svelte-i18n';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import { Card, Badge, ProgressBar } from '$lib/components/ui/index.js';
 	import { cn } from '$lib/utils.js';
 	import Wrench from 'lucide-svelte/icons/wrench';
@@ -66,18 +67,10 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<Wrench class="h-7 w-7 text-cyan-400" />
-				{#if !$isLoading}
-					{$_('maintenance.title')}
-				{:else}
-					Maintenance Forecast
-				{/if}
+				{$_('maintenance.title')}
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">
-				{#if !$isLoading}
-					{$_('maintenance.budgetForecast')}: {totalBudget.toLocaleString()} ₽
-				{:else}
-					Monthly Budget: {totalBudget.toLocaleString()} ₽
-				{/if}
+				{$_('maintenance.budgetForecast')}: {currencyState.format(totalBudget)}
 			</p>
 		</div>
 	</div>
@@ -104,25 +97,13 @@
 				<table class="w-full text-left text-sm">
 					<thead class="border-b border-white/5 bg-slate-800/50">
 						<tr>
-							<th class="p-4 font-semibold text-slate-300">
-								{#if !$isLoading}Engine{:else}Engine{/if}
-							</th>
-							<th class="p-4 font-semibold text-slate-300">Model</th>
-							<th class="p-4 font-semibold text-slate-300">
-								{#if !$isLoading}{$_('maintenance.totalHours')}{:else}Total Hours{/if}
-							</th>
-							<th class="p-4 font-semibold text-slate-300">
-								{#if !$isLoading}{$_('maintenance.nextService')}{:else}Next Service{/if}
-							</th>
-							<th class="p-4 font-semibold text-slate-300">
-								{#if !$isLoading}{$_('maintenance.timeRemaining')}{:else}Time Remaining{/if}
-							</th>
-							<th class="p-4 font-semibold text-slate-300">
-								{#if !$isLoading}{$_('maintenance.estimatedCost')}{:else}Est. Cost{/if}
-							</th>
-							<th class="p-4 font-semibold text-slate-300">
-								{#if !$isLoading}ЗИП{:else}Parts{/if}
-							</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.engine')}</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.model')}</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.totalHours')}</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.nextService')}</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.timeRemaining')}</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.estimatedCost')}</th>
+							<th class="p-4 font-semibold text-slate-300">{$_('maintenance.parts')}</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-white/5">
@@ -173,20 +154,20 @@
 								</td>
 								<td class="p-4">
 									<span class="font-mono text-white"
-										>{forecast.estimated_cost.toLocaleString()}</span
+										>{currencyState.convert(forecast.estimated_cost).toLocaleString()}</span
 									>
-									<span class="ml-1 text-slate-500">₽</span>
+									<span class="ml-1 text-slate-500">{currencyState.info.symbol}</span>
 								</td>
 								<td class="p-4">
 									{#if forecast.parts_available}
 										<Badge variant="success">
 											<CheckCircle class="h-3 w-3" />
-											{#if !$isLoading}{$_('maintenance.partsAvailable')}{:else}Available{/if}
+											{$_('maintenance.partsAvailable')}
 										</Badge>
 									{:else}
 										<Badge variant="danger">
 											<AlertTriangle class="h-3 w-3" />
-											{#if !$isLoading}{$_('maintenance.partsUnavailable')}{:else}Unavailable{/if}
+											{$_('maintenance.partsUnavailable')}
 										</Badge>
 									{/if}
 								</td>
@@ -202,7 +183,7 @@
 			<Card>
 				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 					<Package class="h-5 w-5 text-cyan-400" />
-					{#if !$isLoading}{$_('maintenance.sparePartsInventory')}{:else}Spare Parts Inventory{/if}
+					{$_('maintenance.sparePartsInventory')}
 				</h3>
 				<div class="space-y-3">
 					{#each spareParts as part (part.name)}
@@ -229,31 +210,33 @@
 			<!-- Budget Summary -->
 			<Card>
 				<h3 class="mb-4 text-lg font-semibold text-white">
-					{#if !$isLoading}{$_('maintenance.budgetForecast')}{:else}Monthly Budget Forecast{/if}
+					{$_('maintenance.budgetForecast')}
 				</h3>
 				<div class="space-y-4">
 					<div class="rounded-lg bg-slate-800/50 p-4">
-						<div class="text-sm text-slate-400">Ближайшие 7 дней</div>
+						<div class="text-sm text-slate-400">{$_('maintenance.next7days')}</div>
 						<div class="mt-1 text-2xl font-bold text-rose-400">
-							{forecasts
-								.filter((f) => f.days_remaining <= 7)
-								.reduce((sum, f) => sum + f.estimated_cost, 0)
-								.toLocaleString()} ₽
+							{currencyState.format(
+								forecasts
+									.filter((f) => f.days_remaining <= 7)
+									.reduce((sum, f) => sum + f.estimated_cost, 0)
+							)}
 						</div>
 					</div>
 					<div class="rounded-lg bg-slate-800/50 p-4">
-						<div class="text-sm text-slate-400">Ближайшие 30 дней</div>
+						<div class="text-sm text-slate-400">{$_('maintenance.next30days')}</div>
 						<div class="mt-1 text-2xl font-bold text-amber-400">
-							{forecasts
-								.filter((f) => f.days_remaining <= 30)
-								.reduce((sum, f) => sum + f.estimated_cost, 0)
-								.toLocaleString()} ₽
+							{currencyState.format(
+								forecasts
+									.filter((f) => f.days_remaining <= 30)
+									.reduce((sum, f) => sum + f.estimated_cost, 0)
+							)}
 						</div>
 					</div>
 					<div class="rounded-lg bg-slate-800/50 p-4">
-						<div class="text-sm text-slate-400">Следующий квартал</div>
+						<div class="text-sm text-slate-400">{$_('maintenance.nextQuarter')}</div>
 						<div class="mt-1 text-2xl font-bold text-emerald-400">
-							{forecasts.reduce((sum, f) => sum + f.estimated_cost, 0).toLocaleString()} ₽
+							{currencyState.format(forecasts.reduce((sum, f) => sum + f.estimated_cost, 0))}
 						</div>
 					</div>
 				</div>

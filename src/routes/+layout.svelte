@@ -13,6 +13,7 @@
 	import Settings from 'lucide-svelte/icons/settings';
 	import Shield from 'lucide-svelte/icons/shield';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+	import CurrencySwitcher from '$lib/components/CurrencySwitcher.svelte';
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import { SkipLink } from '$lib/components/ui/index.js';
@@ -65,7 +66,7 @@
 					class="absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-cyan-400"
 				/>
 			</div>
-			<span class="text-sm text-slate-400">Загрузка KASTOR IoT...</span>
+			<span class="text-sm text-slate-400">{$_('app.loading')}</span>
 		</div>
 	</div>
 {:else}
@@ -148,8 +149,9 @@
 					</div>
 
 					<!-- Language Switcher -->
-					<div class="hidden md:block">
+					<div class="hidden md:flex md:items-center md:gap-1">
 						<LanguageSwitcher />
+						<CurrencySwitcher />
 					</div>
 
 					<!-- Settings -->

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { _, isLoading } from 'svelte-i18n';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import { Card, Badge, Button } from '$lib/components/ui/index.js';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
@@ -71,12 +72,12 @@
 
 			// Data structure for waterfall
 			const data = [
-				{ name: 'Целевая\nвыручка', value: 5000000, type: 'total' },
-				{ name: 'Потери\nКПД (газ)', value: -450000, type: 'loss' },
-				{ name: 'Внеплановые\nпростои', value: -320000, type: 'loss' },
-				{ name: 'Затраты\nна ТО', value: -280000, type: 'loss' },
-				{ name: 'Прочие\nиздержки', value: -150000, type: 'loss' },
-				{ name: 'Фактическая\nприбыль', value: 3800000, type: 'total' }
+				{ name: $_('charts.targetRevenue'), value: 5000000, type: 'total' },
+				{ name: $_('charts.kpdLosses'), value: -450000, type: 'loss' },
+				{ name: $_('charts.unplannedDowntime'), value: -320000, type: 'loss' },
+				{ name: $_('charts.maintenanceCosts'), value: -280000, type: 'loss' },
+				{ name: $_('charts.otherExpenses'), value: -150000, type: 'loss' },
+				{ name: $_('charts.actualProfit'), value: 3800000, type: 'total' }
 			];
 
 			// Calculate stacked bar data
@@ -116,9 +117,10 @@
 						const item = data[idx];
 						const color = item.type === 'loss' ? '#f43f5e' : '#06b6d4';
 						const sign = item.value < 0 ? '' : '+';
+						const formattedValue = currencyState.format(Math.abs(item.value));
 						return `<b>${item.name}</b><br/>
 							<span style="color:${color};font-size:14px;font-weight:bold">
-								${sign}${item.value.toLocaleString('ru-RU')} ₽
+								${sign}${formattedValue}
 							</span>`;
 					}
 				},
@@ -154,7 +156,7 @@
 					},
 					// Income bars (cyan)
 					{
-						name: 'Доход',
+						name: $_('charts.income'),
 						type: 'bar',
 						stack: 'waterfall',
 						itemStyle: {
@@ -168,13 +170,17 @@
 							fontWeight: 'bold',
 							fontSize: 11,
 							formatter: (p: { value: number | string }) =>
-								p.value !== '-' ? ((p.value as number) / 1000000).toFixed(1) + 'M ₽' : ''
+								p.value !== '-'
+									? (currencyState.convert(p.value as number) / 1000000).toFixed(1) +
+										'M ' +
+										currencyState.info.symbol
+									: ''
 						},
 						data: income
 					},
 					// Expense bars (red) - these "hang" from the bridge
 					{
-						name: 'Расход',
+						name: $_('charts.expense'),
 						type: 'bar',
 						stack: 'waterfall',
 						itemStyle: {
@@ -194,7 +200,7 @@
 					},
 					// Bridge connector line
 					{
-						name: 'Мост',
+						name: $_('charts.bridge'),
 						type: 'line',
 						step: 'end',
 						symbol: 'none',
@@ -375,13 +381,16 @@
 	}
 
 	function formatCurrency(value: number) {
-		return new Intl.NumberFormat('ru-RU', {
-			style: 'currency',
-			currency: 'RUB',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0
-		}).format(value);
+		return currencyState.format(value);
 	}
+
+	// Update charts when currency changes
+	$effect(() => {
+		if (currencyState.current) {
+			handleResize(); // Trigger redraw if needed, or re-init options
+			// For simplicity, we can re-set options if we have access to them
+		}
+	});
 </script>
 
 <div class="mx-auto max-w-7xl space-y-6">
@@ -480,7 +489,7 @@
 		<Card class="lg:col-span-2">
 			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 				<TrendingUp class="h-5 w-5 text-cyan-400" />
-				{#if !$isLoading}Анализ прибыли (Waterfall){:else}Profit Waterfall Analysis{/if}
+				{$_('analytics.profitWaterfall')}
 			</h3>
 			<div class="h-72 w-full" bind:this={waterfallChartEl}></div>
 		</Card>

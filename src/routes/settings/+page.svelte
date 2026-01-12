@@ -23,10 +23,10 @@
 	<div>
 		<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 			<Settings class="h-7 w-7 text-cyan-400" />
-			{$_('nav.settings') || 'Settings'}
+			{$_('settings.title')}
 		</h1>
 		<p class="mt-1 text-sm text-slate-400">
-			Manage your application preferences and configurations.
+			{$_('settings.subtitle')}
 		</p>
 	</div>
 
@@ -38,16 +38,18 @@
 					<Bell class="h-5 w-5" />
 				</div>
 				<div>
-					<h3 class="font-semibold text-white">Notifications</h3>
-					<p class="text-xs text-slate-400">Manage how you receive alerts</p>
+					<h3 class="font-semibold text-white">{$_('settings.notifications')}</h3>
+					<p class="text-xs text-slate-400">{$_('settings.notificationsDesc')}</p>
 				</div>
 			</div>
 
 			<div class="space-y-4">
 				<div class="flex items-center justify-between">
 					<div class="space-y-0.5">
-						<div class="text-sm font-medium text-slate-200">Email Notifications</div>
-						<div class="text-xs text-slate-500">Receive daily summaries and critical alerts</div>
+						<div class="text-sm font-medium text-slate-200">
+							{$_('settings.emailNotifications')}
+						</div>
+						<div class="text-xs text-slate-500">{$_('settings.emailNotificationsDesc')}</div>
 					</div>
 					<button
 						type="button"
@@ -67,8 +69,8 @@
 
 				<div class="flex items-center justify-between">
 					<div class="space-y-0.5">
-						<div class="text-sm font-medium text-slate-200">SMS Alerts</div>
-						<div class="text-xs text-slate-500">Receive instant SMS for critical failures</div>
+						<div class="text-sm font-medium text-slate-200">{$_('settings.smsNotifications')}</div>
+						<div class="text-xs text-slate-500">{$_('settings.smsNotificationsDesc')}</div>
 					</div>
 					<button
 						type="button"
@@ -88,8 +90,8 @@
 
 				<div class="flex items-center justify-between">
 					<div class="space-y-0.5">
-						<div class="text-sm font-medium text-slate-200">Push Notifications</div>
-						<div class="text-xs text-slate-500">Browser notifications for real-time events</div>
+						<div class="text-sm font-medium text-slate-200">{$_('settings.pushNotifications')}</div>
+						<div class="text-xs text-slate-500">{$_('settings.pushNotificationsDesc')}</div>
 					</div>
 					<button
 						type="button"
@@ -116,15 +118,15 @@
 					<Monitor class="h-5 w-5" />
 				</div>
 				<div>
-					<h3 class="font-semibold text-white">System Configuration</h3>
-					<p class="text-xs text-slate-400">Dashboard refresh and display settings</p>
+					<h3 class="font-semibold text-white">{$_('settings.systemConfig')}</h3>
+					<p class="text-xs text-slate-400">{$_('settings.systemConfigDesc')}</p>
 				</div>
 			</div>
 
 			<div class="space-y-6">
 				<div>
 					<label for="refresh-rate" class="mb-2 block text-sm font-medium text-slate-200">
-						Dashboard Refresh Rate (seconds)
+						{$_('settings.refreshRate')}
 					</label>
 					<div class="flex items-center gap-4">
 						<input
@@ -142,7 +144,7 @@
 
 				<div>
 					<label for="language" class="mb-2 block text-sm font-medium text-slate-200">
-						Default Language
+						{$_('settings.defaultLanguage')}
 					</label>
 					<select
 						id="language"
@@ -151,7 +153,6 @@
 					>
 						<option value="en">English</option>
 						<option value="ru">Русский</option>
-						<option value="de">Deutsch</option>
 					</select>
 				</div>
 			</div>
@@ -162,10 +163,10 @@
 	<div
 		class="flex items-center justify-end gap-4 rounded-xl border border-white/5 bg-slate-900/50 p-4"
 	>
-		<span class="text-sm text-slate-500">Last saved: Just now</span>
+		<span class="text-sm text-slate-500">{$_('settings.lastSaved')}: {$_('settings.justNow')}</span>
 		<Button onclick={saveSettings} class="gap-2">
 			<Save class="h-4 w-4" />
-			Save Changes
+			{$_('settings.saveChanges')}
 		</Button>
 	</div>
 </div>

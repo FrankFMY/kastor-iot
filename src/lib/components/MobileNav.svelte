@@ -14,6 +14,7 @@
 	import Settings from 'lucide-svelte/icons/settings';
 	import Zap from 'lucide-svelte/icons/zap';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import CurrencySwitcher from './CurrencySwitcher.svelte';
 
 	let open = $state(false);
 
@@ -119,12 +120,18 @@
 
 		<!-- Footer -->
 		<div class="border-t border-white/5 p-4">
-			<div class="flex items-center justify-between">
-				<span class="text-xs text-slate-500">Язык</span>
-				<LanguageSwitcher />
+			<div class="mb-4 flex items-center justify-between gap-4">
+				<div class="flex flex-1 items-center justify-between">
+					<span class="text-xs text-slate-500">{$_('settings.language')}</span>
+					<LanguageSwitcher />
+				</div>
+				<div class="flex flex-1 items-center justify-between border-l border-white/5 pl-4">
+					<span class="text-xs text-slate-500">{$_('common.currency')}</span>
+					<CurrencySwitcher />
+				</div>
 			</div>
 			<div
-				class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400"
+				class="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400"
 			>
 				<span class="relative flex h-2 w-2">
 					<span
@@ -132,7 +139,7 @@
 					></span>
 					<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
 				</span>
-				Система онлайн
+				{$_('app.systemOnline')}
 			</div>
 		</div>
 	</nav>

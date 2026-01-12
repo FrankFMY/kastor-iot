@@ -17,6 +17,7 @@
 	import Banknote from 'lucide-svelte/icons/banknote';
 	import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
 	import { base } from '$app/paths';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 
 	interface Props {
 		class?: string;
@@ -99,7 +100,8 @@
 
 	const getAlertText = (gq: number, loss: number) => {
 		if (gq < 0.9) {
-			return `Убыток ${loss.toFixed(0)} ₽/час. Причина: низкое качество газа. Рекомендация: проверка фильтров.`;
+			const formattedLoss = currencyState.format(loss);
+			return `Убыток ${formattedLoss}/час. Причина: низкое качество газа. Рекомендация: проверка фильтров.`;
 		}
 		return 'Оптимальная работа. Качество топлива в пределах нормы.';
 	};
@@ -194,7 +196,7 @@
 				</div>
 				<div class="flex items-baseline gap-1 sm:gap-2">
 					<span class="text-lg font-bold text-white tabular-nums sm:text-2xl">
-						<NumberTicker value={deratedPower} currency="kW" />
+						<NumberTicker value={deratedPower} unit="kW" />
 					</span>
 				</div>
 				<div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800 sm:h-1.5">
@@ -251,7 +253,7 @@
 						<span class="sm:hidden">Убыток/час</span>
 					</div>
 					<div class="text-2xl font-black text-rose-500 tabular-nums sm:text-3xl">
-						<NumberTicker value={lostRevenue} currency="₽" />
+						<NumberTicker value={lostRevenue} isCurrency={true} />
 					</div>
 				</div>
 

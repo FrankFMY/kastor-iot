@@ -3,6 +3,7 @@
 	import { base } from '$app/paths';
 	import { _ } from 'svelte-i18n';
 	import { Card, Badge } from '$lib/components/ui/index.js';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import Clock from 'lucide-svelte/icons/clock';
 	import AlertCircle from 'lucide-svelte/icons/alert-circle';
 	import CheckCircle from 'lucide-svelte/icons/check-circle-2';
@@ -27,13 +28,13 @@
 	let loading = $state(true);
 
 	// Mock data for fallback
-	const mockDowntimes: Downtime[] = [
+	const mockDowntimes = $derived.by(() => [
 		{
 			id: '1',
 			engine_id: 'gpu-2',
 			start_time: new Date(Date.now() - 2 * 60 * 60 * 1000),
 			end_time: new Date(Date.now() - 1 * 60 * 60 * 1000),
-			reason: 'Превышение температуры выхлопа',
+			reason: $_('downtime.reasons.overheat'),
 			loss_rub: 24000
 		},
 		{
@@ -41,7 +42,7 @@
 			engine_id: 'gpu-4',
 			start_time: new Date(Date.now() - 8 * 60 * 60 * 1000),
 			end_time: new Date(Date.now() - 6 * 60 * 60 * 1000),
-			reason: 'Плановое ТО',
+			reason: $_('downtime.reasons.scheduled'),
 			loss_rub: 48000
 		},
 		{
@@ -49,10 +50,10 @@
 			engine_id: 'gpu-1',
 			start_time: new Date(Date.now() - 24 * 60 * 60 * 1000),
 			end_time: new Date(Date.now() - 22 * 60 * 60 * 1000),
-			reason: 'Низкое давление газа',
+			reason: $_('downtime.reasons.lowGas'),
 			loss_rub: 36000
 		}
-	];
+	]);
 
 	async function fetchDowntimes() {
 		try {
@@ -87,11 +88,14 @@
 		const diffMs = endTime.getTime() - startTime.getTime();
 		const hours = Math.floor(diffMs / (1000 * 60 * 60));
 		const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-		// Using explicit hour/min abbreviations to avoid font rendering issues
+
+		const hLabel = $_('units.hours');
+		const mLabel = 'min'; // or add to units
+
 		if (minutes === 0) {
-			return hours + ' ч';
+			return `${hours} ${hLabel}`;
 		}
-		return hours + ' ч ' + minutes + ' мин';
+		return `${hours} ${hLabel} ${minutes} ${mLabel}`;
 	}
 
 	function formatTime(date: string | Date) {
@@ -109,14 +113,14 @@
 		<div class="text-right">
 			<div class="text-xs text-slate-500">{$_('downtime.totalLosses')}</div>
 			<div class="font-mono font-bold text-rose-400">
-				{totalLosses.toLocaleString()} ₽
+				{currencyState.format(totalLosses)}
 			</div>
 		</div>
 	</div>
 
 	<div class="space-y-3">
 		{#if loading}
-			<div class="py-10 text-center text-slate-500">Загрузка...</div>
+			<div class="py-10 text-center text-slate-500">{$_('downtime.loading')}</div>
 		{:else}
 			{#each downtimes as dt (dt.id)}
 				<div
@@ -137,22 +141,22 @@
 							<div class="flex items-center gap-2">
 								<span class="font-bold text-cyan-400">{dt.engine_id.toUpperCase()}</span>
 								{#if !dt.end_time}
-									<Badge variant="danger" pulse>В процессе</Badge>
+									<Badge variant="danger" pulse>{$_('downtime.inProgress')}</Badge>
 								{:else}
-									<Badge variant="success">Завершен</Badge>
+									<Badge variant="success">{$_('downtime.completed')}</Badge>
 								{/if}
 							</div>
 							<span class="font-mono text-sm text-rose-400">
-								-{(dt.loss_rub || 0).toLocaleString()} ₽
+								-{currencyState.format(dt.loss_rub || 0)}
 							</span>
 						</div>
 
-						<p class="mb-2 text-sm text-slate-300">{dt.reason || 'Причина не указана'}</p>
+						<p class="mb-2 text-sm text-slate-300">{dt.reason || $_('downtime.noReason')}</p>
 
 						<div class="flex items-center gap-4 text-xs text-slate-500">
 							<span>{formatTime(dt.start_time)}</span>
 							<span>→</span>
-							<span>{dt.end_time ? formatTime(dt.end_time) : 'сейчас'}</span>
+							<span>{dt.end_time ? formatTime(dt.end_time) : $_('downtime.now')}</span>
 							<span class="text-slate-400">({formatDuration(dt.start_time, dt.end_time)})</span>
 						</div>
 					</div>
@@ -162,7 +166,7 @@
 			{#if downtimes.length === 0}
 				<div class="py-8 text-center text-slate-500">
 					<CheckCircle class="mx-auto mb-2 h-8 w-8 text-emerald-400/50" />
-					<p>Нет простоев за период</p>
+					<p>{$_('downtime.noDowntime')}</p>
 				</div>
 			{/if}
 		{/if}

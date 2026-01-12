@@ -13,6 +13,7 @@
 	import Banknote from 'lucide-svelte/icons/banknote';
 	import Server from 'lucide-svelte/icons/server';
 	import { cn } from '$lib/utils.js';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import type { DashboardData, EngineWithMetrics } from '$lib/types/index.js';
 
 	// SSR data from +page.server.ts
@@ -48,12 +49,12 @@
 				lastUpdate = new Date();
 				connectionStatus = 'polling';
 			} else {
-				triggerError('Ошибка получения данных по API');
+				triggerError($_('errors.apiError'));
 				connectionStatus = 'disconnected';
 			}
 		} catch (e) {
 			console.error('Failed to fetch status', e);
-			triggerError('Сетевая ошибка при обновлении данных');
+			triggerError($_('errors.networkError'));
 			connectionStatus = 'disconnected';
 		}
 	}
@@ -97,7 +98,7 @@
 					updateDashboardState(JSON.parse(event.data));
 				} catch (e) {
 					console.error('Failed to parse SSE full data:', e);
-					triggerError('Ошибка парсинга данных (SSE)');
+					triggerError($_('errors.parseError'));
 				}
 			});
 
@@ -106,7 +107,7 @@
 					updateDashboardState(JSON.parse(event.data));
 				} catch (e) {
 					console.error('Failed to parse SSE diff data:', e);
-					triggerError('Ошибка обновления данных (SSE)');
+					triggerError($_('errors.sseError'));
 				}
 			});
 
@@ -121,7 +122,7 @@
 
 			eventSource.onerror = () => {
 				console.log('SSE connection failed, falling back to polling');
-				triggerError('SSE соединение потеряно, перехожу на опрос');
+				triggerError($_('errors.connectionLost'));
 				if (connectionStatus === 'connected') {
 					connectionStatus = 'polling';
 				}
@@ -262,7 +263,7 @@
 					</h3>
 					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
 						<span class="text-2xl font-bold tracking-tight text-white tabular-nums sm:text-4xl">
-							<NumberTicker value={data.summary.totalPowerMW * 1000} currency="" />
+							<NumberTicker value={data.summary.totalPowerMW * 1000} unit="" />
 						</span>
 						<span class="text-xs font-medium text-slate-500 sm:text-sm">{$_('common.kw')}</span>
 					</div>
@@ -311,13 +312,16 @@
 					</h3>
 					<div class="neon-text-red mt-1 flex items-baseline gap-1 text-rose-400 sm:mt-2 sm:gap-2">
 						<span class="text-2xl font-bold tracking-tight tabular-nums sm:text-4xl">
-							<NumberTicker value={data.summary.currentLoss} />
+							<NumberTicker value={data.summary.currentLoss} isCurrency={true} />
 						</span>
 					</div>
 					<div class="mt-2 text-xs text-rose-300/60 sm:mt-4">
 						<span class="hidden sm:inline">{$_('dashboard.potentialMonthly')}: </span>
-						<span class="sm:hidden">Мес: </span>
-						{((data.summary.currentLoss * 24 * 30) / 1000000).toFixed(1)}M ₽
+						<span class="sm:hidden">{$_('dashboard.potentialMonthlyShort')}: </span>
+						{currencyState.info.symbol}{(
+							(currencyState.convert(data.summary.currentLoss) * 24 * 30) /
+							1000000
+						).toFixed(1)}M
 					</div>
 				</Card>
 			</div>
@@ -347,17 +351,17 @@
 								></span>
 								<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
 							</span>
-							Live SSE
+							{$_('connection.liveSSE')}
 						</span>
 					{:else if connectionStatus === 'polling'}
 						<span class="flex items-center gap-1.5 text-amber-400">
 							<span class="h-2 w-2 rounded-full bg-amber-500"></span>
-							Polling
+							{$_('connection.polling')}
 						</span>
 					{:else}
 						<span class="flex items-center gap-1.5 text-rose-400">
 							<span class="h-2 w-2 rounded-full bg-rose-500"></span>
-							Disconnected
+							{$_('connection.disconnected')}
 						</span>
 					{/if}
 					{#if lastUpdate}
@@ -374,7 +378,7 @@
 						href="{base}/engine/{engine.id}"
 						class="glass-card card-hover-lift group animate-fade-in relative rounded-xl p-4 opacity-0 sm:p-5"
 						style="animation-delay: {i * 50}ms; animation-fill-mode: forwards;"
-						aria-label="Детали двигателя {engine.id.toUpperCase()}"
+						aria-label={$_('dashboard.engineDetails', { values: { id: engine.id.toUpperCase() } })}
 					>
 						<!-- Hover glow effect -->
 						<div
@@ -414,8 +418,10 @@
 										engine.profit_rate > 0 ? 'text-emerald-400' : 'text-rose-400'
 									)}
 								>
-									{engine.profit_rate > 0 ? '+' : ''}{Math.round(engine.profit_rate)}
-									<span class="text-xs opacity-50">₽/ч</span>
+									{engine.profit_rate > 0 ? '+' : ''}{Math.round(
+										currencyState.convert(engine.profit_rate)
+									)}
+									<span class="text-xs opacity-50">{currencyState.info.symbol}{$_('common.perHour')}</span>
 								</div>
 							</div>
 							<div>
@@ -440,7 +446,7 @@
 										engine.vibration > 10 ? 'text-amber-400' : 'text-slate-300'
 									)}
 								>
-									{engine.vibration.toFixed(1)} <span class="text-xs opacity-50">mm/s</span>
+									{engine.vibration.toFixed(1)} <span class="text-xs opacity-50">{$_('units.mms')}</span>
 								</div>
 							</div>
 						</div>
@@ -512,7 +518,7 @@
 	<div class="animate-fade-in fixed right-6 bottom-6 z-50 w-full max-w-sm">
 		<Toast
 			variant="error"
-			title="Ошибка связи"
+			title={$_('errors.title')}
 			message={errorMessage}
 			onclose={() => (showErrorToast = false)}
 		/>

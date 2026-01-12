@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import { base } from '$app/paths';
 	import { cn } from '$lib/utils.js';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import { Card, Badge, Skeleton } from '$lib/components/ui/index.js';
 	import { GasQualitySlider } from '$lib/components/dashboard/index.js';
 	import { ENGINE_CONSTANTS } from '$lib/types/index.js';
@@ -115,10 +116,11 @@
 	// Logic for dynamic narrative
 	let narrativeValues = $derived.by(() => {
 		if (simulatedData) {
+			const lossRub = (1200 - simulatedData.power) * 4.5;
 			return {
 				temp: Math.round(simulatedData.temp - 450),
 				power: Math.round(1200 - simulatedData.power),
-				loss: Math.round((1200 - simulatedData.power) * 4.5) // Using constant tariff
+				loss: currencyState.convert(lossRub).toFixed(0)
 			};
 		}
 		return { temp: 0, power: 0, loss: 0 };
@@ -211,7 +213,7 @@
 					},
 					grid: { left: '3%', right: '4%', bottom: '8%', top: '15%', containLabel: true },
 					legend: {
-						data: ['Мощность (кВт)', 'Температура (°C)'],
+						data: [$_('charts.powerKw'), $_('charts.tempC')],
 						textStyle: { color: '#94a3b8' },
 						icon: 'roundRect'
 					},
@@ -225,7 +227,7 @@
 					yAxis: [
 						{
 							type: 'value',
-							name: 'Мощность',
+							name: $_('charts.power'),
 							nameTextStyle: { color: '#06b6d4' },
 							position: 'left',
 							min: (value: { min: number }) => Math.floor(value.min * 0.95),
@@ -236,7 +238,7 @@
 						},
 						{
 							type: 'value',
-							name: 'Темп.',
+							name: $_('charts.temp'),
 							nameTextStyle: { color: '#f43f5e' },
 							position: 'right',
 							min: (value: { min: number }) => Math.floor(value.min * 0.98),
@@ -248,7 +250,7 @@
 					],
 					series: [
 						{
-							name: 'Мощность (кВт)',
+							name: $_('charts.powerKw'),
 							type: 'line',
 							data: powers,
 							smooth: 0.4,
@@ -275,7 +277,7 @@
 							}
 						},
 						{
-							name: 'Температура (°C)',
+							name: $_('charts.tempC'),
 							type: 'line',
 							yAxisIndex: 1,
 							data: temps,
@@ -378,21 +380,21 @@
 				tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
 				grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
 				legend: {
-					data: ['Power (kW)', 'Exhaust Temp (°C)'],
+					data: [$_('charts.powerKw'), $_('charts.tempC')],
 					textStyle: { color: '#94a3b8' }
 				},
 				xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b' } },
 				yAxis: [
 					{
 						type: 'value',
-						name: 'Power',
+						name: $_('charts.power'),
 						position: 'left',
 						axisLabel: { color: '#64748b' },
 						splitLine: { lineStyle: { color: '#1e293b' } }
 					},
 					{
 						type: 'value',
-						name: 'Temp',
+						name: $_('charts.temp'),
 						position: 'right',
 						axisLabel: { color: '#64748b' },
 						splitLine: { show: false }
@@ -411,7 +413,7 @@
 				],
 				series: [
 					{
-						name: 'Power (kW)',
+						name: $_('charts.powerKw'),
 						type: 'line',
 						data: powers,
 						symbol: 'none',
@@ -427,7 +429,7 @@
 						}
 					},
 					{
-						name: 'Exhaust Temp (°C)',
+						name: $_('charts.tempC'),
 						type: 'line',
 						yAxisIndex: 1,
 						data: temps,
@@ -531,7 +533,7 @@
 			<a
 				href="{base}/"
 				class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all duration-200 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-95"
-				aria-label="Назад к списку"
+				aria-label={$_('engine.backToFleetAria')}
 			>
 				<ArrowLeft class="h-5 w-5" />
 			</a>
@@ -593,7 +595,9 @@
 							{$_('engine.realTimeMetrics')}
 						</h3>
 						{#if simulatedData}
-							<Badge variant="warning" class="animate-pulse text-xs">SIMULATION</Badge>
+							<Badge variant="warning" class="animate-pulse text-xs"
+								>{$_('engine.simulation')}</Badge
+							>
 						{/if}
 					</div>
 
@@ -670,7 +674,7 @@
 								{$_('engine.riskMedium')}
 							</div>
 							<p class="text-xs text-amber-200/70">
-								Температура выше нормы. Возможен дерейтинг мощности.
+								{$_('engine.tempAboveNormal')}
 							</p>
 						</div>
 					{:else}
@@ -695,7 +699,7 @@
 						{#if simulatedData}
 							<div class="text-[10px] font-medium tracking-wider text-rose-400 uppercase">
 								{$_('engine.performanceNarrative', {
-									values: narrativeValues
+									values: { ...narrativeValues, symbol: currencyState.info.symbol }
 								})}
 							</div>
 						{:else}
@@ -729,7 +733,7 @@
 								<div
 									class="absolute bottom-full z-10 mb-2 hidden rounded border border-white/10 bg-slate-900 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
 								>
-									Cyl {i + 1}: {temp.toFixed(0)}°C
+									{$_('engine.cylinderTooltip', { values: { num: i + 1, temp: temp.toFixed(0) } })}
 								</div>
 							</div>
 						{/each}
@@ -753,7 +757,7 @@
 
 				<Card class="border-slate-800/50 bg-slate-900/50">
 					<h3 class="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
-						Connectivity & Gateway
+						{$_('engine.connectivity')}
 					</h3>
 					<div class="space-y-3">
 						<div class="flex items-center justify-between">
@@ -761,7 +765,7 @@
 								<Cpu size={14} class="text-cyan-500" />
 								Wiren Board 7
 							</div>
-							<Badge variant="secondary" class="text-[10px]">Online</Badge>
+							<Badge variant="secondary" class="text-[10px]">{$_('engine.online')}</Badge>
 						</div>
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-2 text-xs text-slate-400">
@@ -770,7 +774,7 @@
 							</div>
 							<div class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
 								<div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
-								Encrypted
+								{$_('engine.encrypted')}
 							</div>
 						</div>
 						<div class="flex items-center justify-between">
@@ -785,7 +789,9 @@
 
 				<Card class="border-slate-800 bg-black/40 font-mono text-[10px]">
 					<div class="mb-2 flex items-center justify-between border-b border-white/5 pb-1">
-						<span class="tracking-widest text-slate-500 uppercase">Live Protocol Data</span>
+						<span class="tracking-widest text-slate-500 uppercase"
+							>{$_('engine.liveProtocolData')}</span
+						>
 						<div class="h-1.5 w-1.5 animate-ping rounded-full bg-emerald-500"></div>
 					</div>
 					<div class="h-[120px] space-y-1 overflow-hidden">
@@ -802,7 +808,7 @@
 	{:else if activeTab === 'history'}
 		<Card>
 			<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-				<h3 class="text-lg font-semibold text-white">History</h3>
+				<h3 class="text-lg font-semibold text-white">{$_('engine.history')}</h3>
 				<div class="flex items-center gap-4">
 					<div class="flex gap-2">
 						{#each ['1h', '24h', '7d'] as r (r)}
@@ -831,7 +837,7 @@
 						class="gap-2"
 					>
 						<Download class="h-4 w-4" />
-						Export CSV
+						{$_('engine.exportCsv')}
 					</Button>
 				</div>
 			</div>
@@ -850,22 +856,26 @@
 								class="absolute top-1 -left-[29px] h-3 w-3 rounded-full border-2 border-slate-900 bg-cyan-500"
 							></div>
 							<div class="flex items-center justify-between">
-								<h4 class="font-medium text-white">ТО-1 (Малое обслуживание)</h4>
+								<h4 class="font-medium text-white">{$_('engine.minorService')}</h4>
 								<Badge variant="warning"
 									>{$_('time.hoursLeft', { values: { hours: 124, days: 5 } })}</Badge
 								>
 							</div>
 							<p class="mt-1 text-sm text-slate-400">
-								Замена масла, фильтров, проверка свечей зажигания.
+								{$_('engine.minorServiceDesc')}
 							</p>
 							<div class="mt-3 flex gap-4">
 								<div class="text-xs text-slate-500">
-									<span class="block text-[10px] tracking-wider uppercase">Бюджет</span>
-									<span class="text-slate-300">150 000 ₽</span>
+									<span class="block text-[10px] tracking-wider uppercase"
+										>{$_('engine.budget')}</span
+									>
+									<span class="text-slate-300">{currencyState.format(150000)}</span>
 								</div>
 								<div class="text-xs text-slate-500">
-									<span class="block text-[10px] tracking-wider uppercase">ЗИП</span>
-									<span class="text-emerald-500">В наличии</span>
+									<span class="block text-[10px] tracking-wider uppercase"
+										>{$_('engine.partsStatus')}</span
+									>
+									<span class="text-emerald-500">{$_('engine.inStock')}</span>
 								</div>
 							</div>
 						</div>
@@ -875,10 +885,12 @@
 								class="absolute top-1 -left-[29px] h-3 w-3 rounded-full border-2 border-slate-900 bg-slate-800"
 							></div>
 							<div class="flex items-center justify-between opacity-50">
-								<h4 class="font-medium text-white">ТО-2 (Среднее обслуживание)</h4>
-								<Badge variant="secondary">через 2000 ч</Badge>
+								<h4 class="font-medium text-white">{$_('engine.mediumService')}</h4>
+								<Badge variant="secondary"
+									>{$_('engine.inHours', { values: { hours: 2000 } })}</Badge
+								>
 							</div>
-							<p class="mt-1 text-sm text-slate-500">Полная диагностика, регулировка клапанов.</p>
+							<p class="mt-1 text-sm text-slate-500">{$_('engine.mediumServiceDesc')}</p>
 						</div>
 					</div>
 				</div>
@@ -886,29 +898,28 @@
 
 			<div class="space-y-6">
 				<Card>
-					<h3 class="mb-4 text-sm font-medium text-slate-400">Необходимые ЗИП</h3>
+					<h3 class="mb-4 text-sm font-medium text-slate-400">{$_('engine.requiredPartsTitle')}</h3>
 					<div class="space-y-3">
 						<div class="flex items-center justify-between rounded bg-white/5 p-2 text-sm">
-							<span class="text-slate-300">Масляный фильтр</span>
-							<Badge variant="success">2 шт</Badge>
+							<span class="text-slate-300">{$_('maintenance.types.oilFilter')}</span>
+							<Badge variant="success">2 {$_('engine.pcs')}</Badge>
 						</div>
 						<div class="flex items-center justify-between rounded bg-white/5 p-2 text-sm">
-							<span class="text-slate-300">Свечи зажигания</span>
-							<Badge variant="success">20 шт</Badge>
+							<span class="text-slate-300">{$_('maintenance.types.sparkPlugs')}</span>
+							<Badge variant="success">20 {$_('engine.pcs')}</Badge>
 						</div>
 						<div class="flex items-center justify-between rounded bg-white/5 p-2 text-sm">
-							<span class="text-slate-300">Воздушный фильтр</span>
-							<Badge variant="danger">Заказать</Badge>
+							<span class="text-slate-300">{$_('maintenance.types.airFilter')}</span>
+							<Badge variant="danger">{$_('engine.toOrder')}</Badge>
 						</div>
 					</div>
-					<Button class="mt-6 w-full" variant="outline">Оформить заявку</Button>
+					<Button class="mt-6 w-full" variant="outline">{$_('maintenance.createRequest')}</Button>
 				</Card>
 
 				<Card class="border-rose-500/20 bg-rose-500/5">
-					<h3 class="mb-2 text-sm font-medium text-rose-400">Внимание</h3>
+					<h3 class="mb-2 text-sm font-medium text-rose-400">{$_('maintenance.attention')}</h3>
 					<p class="text-xs text-rose-200/60">
-						Обнаружен повышенный износ воздушного фильтра. Рекомендуется сократить интервал замены
-						до 100 часов.
+						{$_('maintenance.airFilterWarning')}
 					</p>
 				</Card>
 			</div>
@@ -919,7 +930,7 @@
 			<Card>
 				<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
 					<Brain class="h-5 w-5 text-cyan-400" />
-					Remaining Useful Life (RUL)
+					{$_('engine.rul')}
 				</h3>
 
 				<div class="mb-6 rounded-lg bg-slate-800/50 p-4">
@@ -936,7 +947,7 @@
 				<div class="space-y-4">
 					<div>
 						<div class="mb-2 flex items-center justify-between text-sm">
-							<span class="text-slate-400">Spark Plugs</span>
+							<span class="text-slate-400">{$_('maintenance.types.sparkPlugs')}</span>
 							<span class="font-mono text-emerald-400">92%</span>
 						</div>
 						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
@@ -945,7 +956,7 @@
 					</div>
 					<div>
 						<div class="mb-2 flex items-center justify-between text-sm">
-							<span class="text-slate-400">Oil Quality</span>
+							<span class="text-slate-400">{$_('maintenance.types.oilFilter')}</span>
 							<span class="font-mono text-emerald-400">85%</span>
 						</div>
 						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
@@ -954,7 +965,7 @@
 					</div>
 					<div>
 						<div class="mb-2 flex items-center justify-between text-sm">
-							<span class="text-slate-400">Air Filter</span>
+							<span class="text-slate-400">{$_('maintenance.types.airFilter')}</span>
 							<span class="font-mono text-amber-400">67%</span>
 						</div>
 						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
@@ -963,7 +974,7 @@
 					</div>
 					<div>
 						<div class="mb-2 flex items-center justify-between text-sm">
-							<span class="text-slate-400">Coolant System</span>
+							<span class="text-slate-400">{$_('economics.other')}</span>
 							<span class="font-mono text-emerald-400">78%</span>
 						</div>
 						<div class="h-2 overflow-hidden rounded-full bg-slate-800">
@@ -983,23 +994,25 @@
 				<div class="mb-6 grid grid-cols-2 gap-4">
 					<div class="rounded-lg bg-emerald-500/10 p-4 text-center">
 						<div class="text-3xl font-bold text-emerald-400">2.3%</div>
-						<div class="text-xs text-slate-400">Overall Risk</div>
+						<div class="text-xs text-slate-400">{$_('engine.overallRisk')}</div>
 					</div>
 					<div class="rounded-lg bg-amber-500/10 p-4 text-center">
 						<div class="text-3xl font-bold text-amber-400">8.1%</div>
-						<div class="text-xs text-slate-400">Overheating Risk</div>
+						<div class="text-xs text-slate-400">{$_('engine.overheatRisk')}</div>
 					</div>
 				</div>
 
 				<div class="space-y-3">
-					<h4 class="text-sm font-medium text-slate-300">Risk Factors</h4>
+					<h4 class="text-sm font-medium text-slate-300">{$_('engine.riskFactors')}</h4>
 					<div class="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
 						<div class="flex items-start gap-3">
 							<div class="mt-0.5 h-2 w-2 rounded-full bg-amber-500"></div>
 							<div>
-								<div class="text-sm font-medium text-amber-400">Elevated Exhaust Temperature</div>
+								<div class="text-sm font-medium text-amber-400">
+									{$_('engine.elevatedExhaustTemp')}
+								</div>
 								<div class="text-xs text-slate-400">
-									Average temp 12°C above baseline. Monitor cylinder 12.
+									{$_('engine.elevatedExhaustTempDesc')}
 								</div>
 							</div>
 						</div>
@@ -1008,9 +1021,9 @@
 						<div class="flex items-start gap-3">
 							<div class="mt-0.5 h-2 w-2 rounded-full bg-slate-500"></div>
 							<div>
-								<div class="text-sm font-medium text-slate-300">Vibration Pattern Normal</div>
+								<div class="text-sm font-medium text-slate-300">{$_('engine.vibrationNormal')}</div>
 								<div class="text-xs text-slate-400">
-									No anomalies detected in vibration spectrum analysis.
+									{$_('engine.vibrationNormalDesc')}
 								</div>
 							</div>
 						</div>
@@ -1023,7 +1036,7 @@
 				<div class="mb-4 flex items-center justify-between">
 					<h3 class="flex items-center gap-2 text-lg font-semibold text-white">
 						<Brain class="h-5 w-5 text-cyan-400" />
-						AI Recommendations
+						{$_('engine.aiRecommendations')}
 					</h3>
 					<span class="text-[10px] text-slate-500 italic">
 						* {$_('engine.disclaimer')}
@@ -1032,28 +1045,34 @@
 
 				<div class="grid gap-4 md:grid-cols-3">
 					<div class="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4">
-						<Badge variant="info" class="mb-2">Suggested</Badge>
-						<h4 class="mb-1 font-medium text-white">Schedule Air Filter Check</h4>
+						<Badge variant="info" class="mb-2">{$_('engine.suggested')}</Badge>
+						<h4 class="mb-1 font-medium text-white">{$_('engine.scheduleAirFilter')}</h4>
 						<p class="text-sm text-slate-400">
-							Air filter efficiency dropping. Recommend inspection within 200 operating hours.
+							{$_('engine.scheduleAirFilterDesc')}
 						</p>
-						<div class="mt-3 text-xs text-slate-500">Estimated cost: 15,000 ₽</div>
+						<div class="mt-3 text-xs text-slate-500">
+							{$_('engine.estimatedCost')}: {currencyState.format(15000)}
+						</div>
 					</div>
 					<div class="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-						<Badge variant="warning" class="mb-2">Monitor</Badge>
-						<h4 class="mb-1 font-medium text-white">Cylinder 12 Temperature</h4>
+						<Badge variant="warning" class="mb-2">{$_('engine.monitor')}</Badge>
+						<h4 class="mb-1 font-medium text-white">{$_('engine.cylinder12Temp')}</h4>
 						<p class="text-sm text-slate-400">
-							Consistently running 5-10°C above other cylinders. May indicate injector issue.
+							{$_('engine.cylinder12TempDesc')}
 						</p>
-						<div class="mt-3 text-xs text-slate-500">Potential savings: 50,000 ₽</div>
+						<div class="mt-3 text-xs text-slate-500">
+							{$_('engine.potentialSavings')}: {currencyState.format(50000)}
+						</div>
 					</div>
 					<div class="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
-						<Badge variant="success" class="mb-2">Optimal</Badge>
-						<h4 class="mb-1 font-medium text-white">Fuel Efficiency</h4>
+						<Badge variant="success" class="mb-2">{$_('engine.optimal')}</Badge>
+						<h4 class="mb-1 font-medium text-white">{$_('engine.fuelEfficiency')}</h4>
 						<p class="text-sm text-slate-400">
-							Engine operating at 98.5% of optimal fuel efficiency. No action required.
+							{$_('engine.fuelEfficiencyDesc')}
 						</p>
-						<div class="mt-3 text-xs text-slate-500">Savings this month: 25,000 ₽</div>
+						<div class="mt-3 text-xs text-slate-500">
+							{$_('engine.savingsThisMonth')}: {currencyState.format(25000)}
+						</div>
 					</div>
 				</div>
 			</Card>

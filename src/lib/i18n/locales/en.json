@@ -3,7 +3,8 @@
 		"name": "KASTOR",
 		"tagline": "IoT",
 		"systemOnline": "System Online",
-		"systemOffline": "System Offline"
+		"systemOffline": "System Offline",
+		"loading": "Loading KASTOR IoT..."
 	},
 	"nav": {
 		"dashboard": "Dashboard",
@@ -30,9 +31,11 @@
 		"noEvents": "No events logged yet",
 		"ofTarget": "of Target",
 		"potentialMonthly": "Potential Monthly",
+		"potentialMonthlyShort": "Mo",
 		"fleetStatus": "Online: {online} of {total}",
 		"fleetStatus.title": "Fleet Status",
-		"fleetStatus.online": "online"
+		"fleetStatus.online": "online",
+		"engineDetails": "Engine details {id}"
 	},
 	"engine": {
 		"load": "Load",
@@ -41,6 +44,7 @@
 		"vibration": "Vibration",
 		"details": "Engine Details",
 		"backToFleet": "← Back to Fleet",
+		"backToFleetAria": "Back to Fleet",
 		"realTimeMetrics": "Real-time Metrics",
 		"matchesBaseline": "Operation matches baseline parameters",
 		"powerOutput": "Power Output",
@@ -52,6 +56,7 @@
 		"performanceCorrelation": "Performance Correlation",
 		"cylinderTemps": "Cylinder Temps",
 		"cylinderMisfire": "Cylinder Misfire Detected",
+		"cylinderTooltip": "Cyl {num}: {temp}°C",
 		"topView": "Top View",
 		"normal": "Normal",
 		"warning": "Warning",
@@ -62,11 +67,51 @@
 		"riskMedium": "Risk moderate. Monitoring recommended.",
 		"riskHigh": "Risk high. Intervention required.",
 		"disclaimer": "Assessment based on rules and thresholds. Requires calibration on site data.",
-		"performanceNarrative": "Gas degraded → temp +{temp}°C → derating −{power} kW → loss {loss} ₽/h",
+		"performanceNarrative": "Gas degraded → temp +{temp}°C → derating −{power} kW → loss {loss} {symbol}/h",
 		"maintenancePlan": "Maintenance Plan",
 		"nextServiceIn": "Next service in {hours} h",
 		"requiredParts": "Required parts: {parts}",
-		"estimatedBudget": "Estimated budget: {budget} ₽",
+		"estimatedBudget": "Estimated budget: {budget} {symbol}",
+		"tempAboveNormal": "Temperature above normal. Possible power derating.",
+		"simulation": "SIMULATION",
+		"connectivity": "Connectivity & Gateway",
+		"online": "Online",
+		"encrypted": "Encrypted",
+		"liveProtocolData": "Live Protocol Data",
+		"history": "History",
+		"exportCsv": "Export CSV",
+		"minorService": "Service-1 (Minor Service)",
+		"minorServiceDesc": "Oil change, filters, spark plug inspection.",
+		"mediumService": "Service-2 (Medium Service)",
+		"mediumServiceDesc": "Full diagnostics, valve adjustment.",
+		"budget": "Budget",
+		"partsStatus": "Parts",
+		"inStock": "In Stock",
+		"requiredPartsTitle": "Required Parts",
+		"pcs": "pcs",
+		"toOrder": "Order",
+		"rul": "Remaining Useful Life (RUL)",
+		"overallRisk": "Overall Risk",
+		"overheatRisk": "Overheating Risk",
+		"riskFactors": "Risk Factors",
+		"elevatedExhaustTemp": "Elevated Exhaust Temperature",
+		"elevatedExhaustTempDesc": "Average temp 12°C above baseline. Monitor cylinder 12.",
+		"vibrationNormal": "Vibration Pattern Normal",
+		"vibrationNormalDesc": "No anomalies detected in vibration spectrum analysis.",
+		"aiRecommendations": "AI Recommendations",
+		"suggested": "Suggested",
+		"monitor": "Monitor",
+		"optimal": "Optimal",
+		"scheduleAirFilter": "Schedule Air Filter Check",
+		"scheduleAirFilterDesc": "Air filter efficiency dropping. Recommend inspection within 200 operating hours.",
+		"cylinder12Temp": "Cylinder 12 Temperature",
+		"cylinder12TempDesc": "Consistently running 5-10°C above other cylinders. May indicate injector issue.",
+		"fuelEfficiency": "Fuel Efficiency",
+		"fuelEfficiencyDesc": "Engine operating at 98.5% of optimal fuel efficiency. No action required.",
+		"estimatedCost": "Estimated cost",
+		"potentialSavings": "Potential savings",
+		"savingsThisMonth": "Savings this month",
+		"inHours": "in {hours} h",
 		"tabs": {
 			"overview": "Overview",
 			"history": "History",
@@ -82,6 +127,8 @@
 		"estimatedCost": "Estimated Cost",
 		"partsAvailable": "Parts Available",
 		"partsUnavailable": "Parts Unavailable",
+		"engine": "Engine",
+		"model": "Model",
 		"urgency": {
 			"low": "Low",
 			"medium": "Medium",
@@ -94,10 +141,24 @@
 			"overhaul": "Overhaul"
 		},
 		"sparePartsInventory": "Spare Parts Inventory",
-		"budgetForecast": "Monthly Budget"
+		"budgetForecast": "Monthly Budget",
+		"next7days": "Next 7 days",
+		"next30days": "Next 30 days",
+		"nextQuarter": "Next Quarter",
+		"parts": "Parts",
+		"order": "Order",
+		"createRequest": "Create Request",
+		"attention": "Attention",
+		"airFilterWarning": "Increased air filter wear detected. Recommendation: reduce replacement interval to 100 hours.",
+		"types": {
+			"oilFilter": "Oil Filter",
+			"sparkPlugs": "Spark Plugs",
+			"airFilter": "Air Filter"
+		}
 	},
 	"economics": {
 		"title": "Energy Economics",
+		"subtitle": "Cost structure and expense analysis",
 		"costStructure": "Cost Structure",
 		"costPerKwh": "Cost per kWh",
 		"monthlyProduction": "Monthly Production",
@@ -107,7 +168,13 @@
 		"spareParts": "Spare Parts",
 		"labor": "Labor",
 		"other": "Other",
-		"monthlyTrend": "Cost Trend"
+		"monthlyTrend": "Cost Trend",
+		"averageLastMonth": "Average for last month",
+		"vsLastMonth": "vs last month",
+		"costDetails": "Cost Details",
+		"ofTotalCosts": "of total costs",
+		"costLabel": "Cost",
+		"productionLabel": "Production (MWh)"
 	},
 	"alerts": {
 		"title": "Alerts",
@@ -183,6 +250,7 @@
 		"downloadReport": "Download Report",
 		"vsLastYear": "vs last year",
 		"prevented": "prevented",
+		"profitWaterfall": "Profit Analysis (Waterfall)",
 		"reasons": {
 			"overheat": "Overheat",
 			"vibration": "Vibration",
@@ -194,6 +262,21 @@
 			"maintenanceSavings": "Maintenance Savings",
 			"efficiency": "Efficiency"
 		}
+	},
+	"charts": {
+		"targetRevenue": "Target\nRevenue",
+		"kpdLosses": "Efficiency\nLosses (gas)",
+		"unplannedDowntime": "Unplanned\nDowntime",
+		"maintenanceCosts": "Maintenance\nCosts",
+		"otherExpenses": "Other\nExpenses",
+		"actualProfit": "Actual\nProfit",
+		"income": "Income",
+		"expense": "Expense",
+		"bridge": "Bridge",
+		"powerKw": "Power (kW)",
+		"tempC": "Temperature (°C)",
+		"power": "Power",
+		"temp": "Temp"
 	},
 	"admin": {
 		"title": "Administration",
@@ -250,7 +333,17 @@
 		"title": "Downtime",
 		"totalLosses": "Total Losses",
 		"completed": "Completed",
-		"ongoing": "Ongoing"
+		"ongoing": "Ongoing",
+		"loading": "Loading...",
+		"inProgress": "In Progress",
+		"noDowntime": "No downtime for the period",
+		"noReason": "Reason not specified",
+		"now": "now",
+		"reasons": {
+			"overheat": "Exhaust temperature exceeded",
+			"scheduled": "Scheduled maintenance",
+			"lowGas": "Low gas pressure"
+		}
 	},
 	"status": {
 		"ok": "Running",
@@ -261,6 +354,7 @@
 		"kw": "kW",
 		"mw": "MW",
 		"kwh": "kWh",
+		"mwh": "MWh",
 		"celsius": "°C",
 		"mms": "mm/s",
 		"m3": "m³",
@@ -268,7 +362,8 @@
 		"rubPerHour": "R/h",
 		"hours": "h",
 		"days": "d",
-		"percent": "%"
+		"percent": "%",
+		"min": "min"
 	},
 	"time": {
 		"hours": "{count}h",
@@ -322,18 +417,42 @@
 		"subtitle": "Configure system parameters",
 		"general": "General",
 		"notifications": "Notifications",
+		"notificationsDesc": "Manage how you receive alerts",
 		"appearance": "Appearance",
 		"language": "Language",
+		"defaultLanguage": "Default Language",
 		"timezone": "Timezone",
 		"units": "Units",
 		"emailNotifications": "Email Notifications",
+		"emailNotificationsDesc": "Receive daily summaries and critical alerts",
 		"pushNotifications": "Push Notifications",
+		"pushNotificationsDesc": "Browser notifications for real-time events",
 		"smsNotifications": "SMS Notifications",
+		"smsNotificationsDesc": "Receive instant SMS for critical failures",
 		"theme": "Theme",
 		"dark": "Dark",
 		"light": "Light",
 		"system": "System",
-		"saved": "Settings saved"
+		"saved": "Settings saved",
+		"systemConfig": "System Configuration",
+		"systemConfigDesc": "Dashboard refresh and display settings",
+		"refreshRate": "Dashboard Refresh Rate (seconds)",
+		"lastSaved": "Last saved",
+		"justNow": "Just now",
+		"saveChanges": "Save Changes"
+	},
+	"connection": {
+		"liveSSE": "Live SSE",
+		"polling": "Polling",
+		"disconnected": "Disconnected"
+	},
+	"errors": {
+		"title": "Connection Error",
+		"apiError": "Error fetching data from API",
+		"networkError": "Network error while updating data",
+		"parseError": "Error parsing data (SSE)",
+		"sseError": "Error updating data (SSE)",
+		"connectionLost": "SSE connection lost, switching to polling"
 	},
 	"common": {
 		"kw": " kW",
@@ -367,7 +486,15 @@
 		"openMenu": "Open navigation menu",
 		"closeMenu": "Close navigation menu",
 		"toggleLanguage": "Change language",
-		"toggleTheme": "Toggle theme"
+		"toggleTheme": "Toggle theme",
+		"currency": "Currency",
+		"perHour": "/h"
+	},
+	"currencies": {
+		"RUB": "Russian Ruble",
+		"USD": "US Dollar",
+		"EUR": "Euro",
+		"CNY": "Chinese Yuan"
 	},
 	"demo": {
 		"gasQualitySim": "Gas Quality Simulator",

@@ -3,10 +3,11 @@
 		"name": "KASTOR",
 		"tagline": "IoT",
 		"systemOnline": "Система онлайн",
-		"systemOffline": "Система офлайн"
+		"systemOffline": "Система офлайн",
+		"loading": "Загрузка KASTOR IoT..."
 	},
 	"nav": {
-		"dashboard": "Панель управления",
+		"dashboard": "Дашборд",
 		"maintenance": "Техобслуживание",
 		"economics": "Экономика",
 		"settings": "Настройки",
@@ -21,7 +22,7 @@
 		"dashboards": "Дашборды"
 	},
 	"dashboard": {
-		"title": "Панель управления",
+		"title": "Дашборд",
 		"totalOutput": "Общая выработка",
 		"plantEfficiency": "Эффективность станции",
 		"financialLoss": "Финансовые потери",
@@ -30,9 +31,11 @@
 		"noEvents": "Событий пока нет",
 		"ofTarget": "от плана",
 		"potentialMonthly": "Потенциально за месяц",
+		"potentialMonthlyShort": "Мес",
 		"fleetStatus": "В работе: {online} из {total}",
 		"fleetStatus.title": "Статус парка",
-		"fleetStatus.online": "онлайн"
+		"fleetStatus.online": "онлайн",
+		"engineDetails": "Детали двигателя {id}"
 	},
 	"engine": {
 		"load": "Нагрузка",
@@ -41,6 +44,7 @@
 		"vibration": "Вибрация",
 		"details": "Детали двигателя",
 		"backToFleet": "← Назад к списку",
+		"backToFleetAria": "Назад к списку",
 		"realTimeMetrics": "Метрики в реальном времени",
 		"matchesBaseline": "Работа соответствует базовым параметрам",
 		"powerOutput": "Выходная мощность",
@@ -50,8 +54,9 @@
 		"criticalOverheat": "Критический перегрев",
 		"optimalOperation": "Оптимальная работа",
 		"performanceCorrelation": "Корреляция производительности",
-		"cylinderTemps": "Температуры цилиндров",
+		"cylinderTemps": "Темп. цилиндров",
 		"cylinderMisfire": "Обнаружен пропуск зажигания",
+		"cylinderTooltip": "Цилиндр {num}: {temp}°C",
 		"topView": "Вид сверху",
 		"normal": "Норма",
 		"warning": "Предупреждение",
@@ -62,11 +67,51 @@
 		"riskMedium": "Риск умеренный. Требуется мониторинг.",
 		"riskHigh": "Риск высокий. Требуется вмешательство.",
 		"disclaimer": "Оценка на основе правил и порогов. Требует калибровки на данных объекта.",
-		"performanceNarrative": "Газ ухудшился → температура +{temp}°C → дерейтинг −{power} кВт → убыток {loss} ₽/час",
+		"performanceNarrative": "Газ ухудшился → температура +{temp}°C → дерейтинг −{power} кВт → убыток {loss} {symbol}/час",
 		"maintenancePlan": "План обслуживания",
 		"nextServiceIn": "Следующее ТО через {hours} ч",
 		"requiredParts": "Необходимые ЗИП: {parts}",
-		"estimatedBudget": "Оценочный бюджет: {budget} ₽",
+		"estimatedBudget": "Оценочный бюджет: {budget} {symbol}",
+		"tempAboveNormal": "Температура выше нормы. Возможен дерейтинг мощности.",
+		"simulation": "СИМУЛЯЦИЯ",
+		"connectivity": "Подключение и шлюз",
+		"online": "Онлайн",
+		"encrypted": "Зашифровано",
+		"liveProtocolData": "Данные протокола в реальном времени",
+		"history": "История",
+		"exportCsv": "Экспорт CSV",
+		"minorService": "ТО-1 (Малое обслуживание)",
+		"minorServiceDesc": "Замена масла, фильтров, проверка свечей зажигания.",
+		"mediumService": "ТО-2 (Среднее обслуживание)",
+		"mediumServiceDesc": "Полная диагностика, регулировка клапанов.",
+		"budget": "Бюджет",
+		"partsStatus": "ЗИП",
+		"inStock": "В наличии",
+		"requiredPartsTitle": "Необходимые ЗИП",
+		"pcs": "шт",
+		"toOrder": "Заказать",
+		"rul": "Остаточный ресурс (RUL)",
+		"overallRisk": "Общий риск",
+		"overheatRisk": "Риск перегрева",
+		"riskFactors": "Факторы риска",
+		"elevatedExhaustTemp": "Повышенная температура выхлопа",
+		"elevatedExhaustTempDesc": "Средняя температура на 12°C выше базовой. Мониторинг цилиндра 12.",
+		"vibrationNormal": "Вибрация в норме",
+		"vibrationNormalDesc": "Аномалий в спектре вибрации не обнаружено.",
+		"aiRecommendations": "Рекомендации ИИ",
+		"suggested": "Рекомендовано",
+		"monitor": "Мониторинг",
+		"optimal": "Оптимально",
+		"scheduleAirFilter": "Запланировать проверку воздушного фильтра",
+		"scheduleAirFilterDesc": "Эффективность воздушного фильтра снижается. Рекомендуется осмотр в течение 200 часов работы.",
+		"cylinder12Temp": "Температура цилиндра 12",
+		"cylinder12TempDesc": "Стабильно работает на 5-10°C выше других цилиндров. Возможна проблема с инжектором.",
+		"fuelEfficiency": "Топливная эффективность",
+		"fuelEfficiencyDesc": "Двигатель работает на 98.5% от оптимальной топливной эффективности. Действий не требуется.",
+		"estimatedCost": "Оценочная стоимость",
+		"potentialSavings": "Потенциальная экономия",
+		"savingsThisMonth": "Экономия в этом месяце",
+		"inHours": "через {hours} ч",
 		"tabs": {
 			"overview": "Обзор",
 			"history": "История",
@@ -82,6 +127,8 @@
 		"estimatedCost": "Оценочная стоимость",
 		"partsAvailable": "ЗИП в наличии",
 		"partsUnavailable": "ЗИП отсутствует",
+		"engine": "Двигатель",
+		"model": "Модель",
 		"urgency": {
 			"low": "Низкая",
 			"medium": "Средняя",
@@ -94,20 +141,40 @@
 			"overhaul": "Капремонт"
 		},
 		"sparePartsInventory": "Склад запчастей",
-		"budgetForecast": "Бюджет на месяц"
+		"budgetForecast": "Бюджет на месяц",
+		"next7days": "Ближайшие 7 дней",
+		"next30days": "Ближайшие 30 дней",
+		"nextQuarter": "Следующий квартал",
+		"parts": "ЗИП",
+		"order": "Заказать",
+		"createRequest": "Оформить заявку",
+		"attention": "Внимание",
+		"airFilterWarning": "Обнаружен повышенный износ воздушного фильтра. Рекомендуется сократить интервал замены до 100 часов.",
+		"types": {
+			"oilFilter": "Масляный фильтр",
+			"sparkPlugs": "Свечи зажигания",
+			"airFilter": "Воздушный фильтр"
+		}
 	},
 	"economics": {
 		"title": "Экономика энергии",
+		"subtitle": "Структура себестоимости и анализ затрат",
 		"costStructure": "Структура себестоимости",
 		"costPerKwh": "Себестоимость кВт·ч",
-		"monthlyProduction": "Месячная выработка",
+		"monthlyProduction": "Выработка за месяц",
 		"totalCosts": "Общие затраты",
 		"gasShare": "Газ",
 		"depreciation": "Амортизация",
 		"spareParts": "ЗИП",
 		"labor": "ФОТ",
 		"other": "Прочее",
-		"monthlyTrend": "Динамика затрат"
+		"monthlyTrend": "Динамика затрат",
+		"averageLastMonth": "Средняя за последний месяц",
+		"vsLastMonth": "к прошлому месяцу",
+		"costDetails": "Детализация затрат",
+		"ofTotalCosts": "от общих затрат",
+		"costLabel": "Себестоимость",
+		"productionLabel": "Выработка (МВт·ч)"
 	},
 	"alerts": {
 		"title": "Алерты",
@@ -166,7 +233,7 @@
 		"predictedSavings": "Прогноз на месяц",
 		"potentialSavings": "Потенциальная экономия",
 		"roi": "Возврат инвестиций",
-		"roiTitle": "Return on Investment",
+		"roiTitle": "Возврат инвестиций",
 		"paybackPeriod": "Инвестиции окупились за",
 		"months": "месяца",
 		"monthlySavings": "Экономия за месяц",
@@ -183,6 +250,7 @@
 		"downloadReport": "Скачать отчет",
 		"vsLastYear": "vs прошлый год",
 		"prevented": "предотвр.",
+		"profitWaterfall": "Анализ прибыли (Waterfall)",
 		"reasons": {
 			"overheat": "Перегрев",
 			"vibration": "Вибрация",
@@ -194,6 +262,21 @@
 			"maintenanceSavings": "Экономия на ТО",
 			"efficiency": "Эффективность"
 		}
+	},
+	"charts": {
+		"targetRevenue": "Целевая\nвыручка",
+		"kpdLosses": "Потери\nКПД (газ)",
+		"unplannedDowntime": "Внеплановые\nпростои",
+		"maintenanceCosts": "Затраты\nна ТО",
+		"otherExpenses": "Прочие\nиздержки",
+		"actualProfit": "Фактическая\nприбыль",
+		"income": "Доход",
+		"expense": "Расход",
+		"bridge": "Мост",
+		"powerKw": "Мощность (кВт)",
+		"tempC": "Температура (°C)",
+		"power": "Мощность",
+		"temp": "Темп."
 	},
 	"admin": {
 		"title": "Администрирование",
@@ -250,7 +333,17 @@
 		"title": "Простои",
 		"totalLosses": "Общие потери",
 		"completed": "Завершен",
-		"ongoing": "В процессе"
+		"ongoing": "В процессе",
+		"loading": "Загрузка...",
+		"inProgress": "В работе",
+		"noDowntime": "Нет простоев за период",
+		"noReason": "Причина не указана",
+		"now": "сейчас",
+		"reasons": {
+			"overheat": "Превышение температуры выхлопа",
+			"scheduled": "Плановое ТО",
+			"lowGas": "Низкое давление газа"
+		}
 	},
 	"status": {
 		"ok": "Работа",
@@ -261,6 +354,7 @@
 		"kw": "кВт",
 		"mw": "МВт",
 		"kwh": "кВт·ч",
+		"mwh": "МВт·ч",
 		"celsius": "°C",
 		"mms": "мм/с",
 		"m3": "м³",
@@ -268,7 +362,8 @@
 		"rubPerHour": "₽/ч",
 		"hours": "ч",
 		"days": "дн",
-		"percent": "%"
+		"percent": "%",
+		"min": "мин"
 	},
 	"time": {
 		"hours": "{count} ч",
@@ -322,18 +417,42 @@
 		"subtitle": "Настройка системы и параметров",
 		"general": "Общие",
 		"notifications": "Уведомления",
+		"notificationsDesc": "Управление способами получения оповещений",
 		"appearance": "Внешний вид",
 		"language": "Язык интерфейса",
+		"defaultLanguage": "Язык по умолчанию",
 		"timezone": "Часовой пояс",
 		"units": "Единицы измерения",
 		"emailNotifications": "Email уведомления",
+		"emailNotificationsDesc": "Получать ежедневные сводки и критические оповещения",
 		"pushNotifications": "Push уведомления",
+		"pushNotificationsDesc": "Браузерные уведомления о событиях в реальном времени",
 		"smsNotifications": "SMS уведомления",
+		"smsNotificationsDesc": "Получать мгновенные SMS о критических сбоях",
 		"theme": "Тема",
 		"dark": "Темная",
 		"light": "Светлая",
 		"system": "Системная",
-		"saved": "Настройки сохранены"
+		"saved": "Настройки сохранены",
+		"systemConfig": "Конфигурация системы",
+		"systemConfigDesc": "Настройки обновления и отображения дашборда",
+		"refreshRate": "Частота обновления дашборда (сек)",
+		"lastSaved": "Последнее сохранение",
+		"justNow": "Только что",
+		"saveChanges": "Сохранить изменения"
+	},
+	"connection": {
+		"liveSSE": "Live SSE",
+		"polling": "Опрос",
+		"disconnected": "Отключено"
+	},
+	"errors": {
+		"title": "Ошибка связи",
+		"apiError": "Ошибка получения данных по API",
+		"networkError": "Сетевая ошибка при обновлении данных",
+		"parseError": "Ошибка парсинга данных (SSE)",
+		"sseError": "Ошибка обновления данных (SSE)",
+		"connectionLost": "SSE соединение потеряно, перехожу на опрос"
 	},
 	"common": {
 		"kw": " кВт",
@@ -367,7 +486,15 @@
 		"openMenu": "Открыть меню навигации",
 		"closeMenu": "Закрыть меню навигации",
 		"toggleLanguage": "Сменить язык",
-		"toggleTheme": "Переключить тему"
+		"toggleTheme": "Переключить тему",
+		"currency": "Валюта",
+		"perHour": "/ч"
+	},
+	"currencies": {
+		"RUB": "Российский рубль",
+		"USD": "Доллар США",
+		"EUR": "Евро",
+		"CNY": "Китайский юань"
 	},
 	"demo": {
 		"gasQualitySim": "Симулятор качества газа",

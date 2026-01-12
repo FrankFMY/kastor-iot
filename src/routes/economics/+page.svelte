@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { _, isLoading } from 'svelte-i18n';
+	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import { Card, Badge } from '$lib/components/ui/index.js';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';
 	import Fuel from 'lucide-svelte/icons/fuel';
@@ -32,14 +33,14 @@
 	let pieChartInstance: EChartsInstance | null = null;
 	let barChartInstance: EChartsInstance | null = null;
 
-	type IconComponent = typeof import('lucide-svelte/icons/fuel').default;
-	const costConfig: Record<string, { label: string; color: string; icon: IconComponent }> = {
-		gas: { label: 'Газ', color: '#f97316', icon: Fuel },
-		depreciation: { label: 'Амортизация', color: '#3b82f6', icon: Building },
-		spare_parts: { label: 'ЗИП', color: '#10b981', icon: Wrench },
-		labor: { label: 'ФОТ', color: '#a855f7', icon: Users },
-		other: { label: 'Прочее', color: '#64748b', icon: TrendingUp }
-	};
+	// type IconComponent = typeof import('lucide-svelte/icons/fuel').default;
+	const costConfig = $derived.by(() => ({
+		gas: { label: $_('economics.gasShare'), color: '#f97316', icon: Fuel },
+		depreciation: { label: $_('economics.depreciation'), color: '#3b82f6', icon: Building },
+		spare_parts: { label: $_('economics.spareParts'), color: '#10b981', icon: Wrench },
+		labor: { label: $_('economics.labor'), color: '#a855f7', icon: Users },
+		other: { label: $_('economics.other'), color: '#64748b', icon: TrendingUp }
+	}));
 
 	onMount(async () => {
 		try {
@@ -84,7 +85,7 @@
 
 	function initPieChart(instance: EChartsInstance, data: CostBreakdown) {
 		const chartData = Object.entries(costConfig).map(([key, config]) => ({
-			value: data[key as keyof CostBreakdown],
+			value: currencyState.convert(data[key as keyof CostBreakdown]),
 			name: config.label,
 			itemStyle: { color: config.color }
 		}));
@@ -92,7 +93,7 @@
 		instance.setOption({
 			tooltip: {
 				trigger: 'item',
-				formatter: '{b}: {c} ₽ ({d}%)',
+				formatter: `{b}: {c} ${currencyState.info.symbol} ({d}%)`,
 				backgroundColor: 'rgba(15, 23, 42, 0.9)',
 				borderColor: '#334155',
 				textStyle: { color: '#f8fafc' }
@@ -131,6 +132,9 @@
 	}
 
 	function initBarChart(instance: EChartsInstance, data: MonthlyTrend[]) {
+		const costLabel = `${$_('economics.costLabel')} (${currencyState.info.symbol})`;
+		const productionLabel = $_('economics.productionLabel');
+
 		instance.setOption({
 			tooltip: {
 				trigger: 'axis',
@@ -141,7 +145,7 @@
 			},
 			grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
 			legend: {
-				data: ['Себестоимость (₽)', 'Выработка (МВт·ч)'],
+				data: [costLabel, productionLabel],
 				textStyle: { color: '#94a3b8' }
 			},
 			xAxis: {
@@ -152,14 +156,14 @@
 			yAxis: [
 				{
 					type: 'value',
-					name: '₽',
+					name: currencyState.info.symbol,
 					position: 'left',
 					axisLabel: { color: '#cbd5e1' },
 					splitLine: { lineStyle: { color: '#334155' } }
 				},
 				{
 					type: 'value',
-					name: 'МВт·ч',
+					name: $_('units.mwh'),
 					position: 'right',
 					axisLabel: { color: '#cbd5e1' },
 					splitLine: { show: false }
@@ -167,13 +171,13 @@
 			],
 			series: [
 				{
-					name: 'Себестоимость (₽)',
+					name: costLabel,
 					type: 'bar',
-					data: data.map((d) => d.cost),
+					data: data.map((d) => currencyState.convert(d.cost)),
 					itemStyle: { color: '#06b6d4' } // cyan-500
 				},
 				{
-					name: 'Выработка (МВт·ч)',
+					name: productionLabel,
 					type: 'line',
 					yAxisIndex: 1,
 					data: data.map((d) => d.production),
@@ -203,13 +207,9 @@
 	<div>
 		<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 			<TrendingUp class="h-7 w-7 text-cyan-400" />
-			{#if !$isLoading}
-				{$_('economics.title')}
-			{:else}
-				Экономика энергии
-			{/if}
+			{$_('economics.title')}
 		</h1>
-		<p class="mt-1 text-sm text-slate-400">Структура себестоимости и анализ затрат</p>
+		<p class="mt-1 text-sm text-slate-400">{$_('economics.subtitle')}</p>
 	</div>
 
 	{#if loading || !costBreakdown}
@@ -230,36 +230,40 @@
 					<Zap size={100} />
 				</div>
 				<h3 class="text-sm font-medium text-slate-400">
-					{#if !$isLoading}{$_('economics.costPerKwh')}{:else}Себестоимость кВт·ч{/if}
+					{$_('economics.costPerKwh')}
 				</h3>
 				<div class="mt-2 flex items-baseline gap-2">
-					<span class="text-4xl font-bold text-white">{costBreakdown.cost_per_kwh.toFixed(2)}</span>
-					<span class="text-lg text-slate-500">₽/кВт·ч</span>
+					<span class="text-4xl font-bold text-white"
+						>{currencyState.convert(costBreakdown.cost_per_kwh).toFixed(2)}</span
+					>
+					<span class="text-lg text-slate-500">{currencyState.info.symbol}/{$_('units.kwh')}</span>
 				</div>
-				<div class="mt-4 text-xs text-slate-500">Средняя за последний месяц</div>
+				<div class="mt-4 text-xs text-slate-500">{$_('economics.averageLastMonth')}</div>
 			</Card>
 
 			<Card>
-				<h3 class="text-sm font-medium text-slate-400">Выработка за месяц</h3>
+				<h3 class="text-sm font-medium text-slate-400">{$_('economics.monthlyProduction')}</h3>
 				<div class="mt-2 flex items-baseline gap-2">
 					<span class="text-4xl font-bold text-emerald-400">2,300</span>
-					<span class="text-lg text-slate-500">МВт·ч</span>
+					<span class="text-lg text-slate-500">{$_('units.mwh')}</span>
 				</div>
 				<div class="mt-4 flex items-center gap-2 text-xs text-emerald-400">
 					<TrendingUp class="h-4 w-4" />
-					+2.2% к прошлому месяцу
+					+2.2% {$_('economics.vsLastMonth')}
 				</div>
 			</Card>
 
 			<Card>
-				<h3 class="text-sm font-medium text-slate-400">Общие затраты</h3>
+				<h3 class="text-sm font-medium text-slate-400">{$_('economics.totalCosts')}</h3>
 				<div class="mt-2 flex items-baseline gap-2">
-					<span class="text-4xl font-bold text-amber-400">11.5</span>
-					<span class="text-lg text-slate-500">млн ₽</span>
+					<span class="text-4xl font-bold text-amber-400"
+						>{(currencyState.convert(11500000) / 1000000).toFixed(1)}</span
+					>
+					<span class="text-lg text-slate-500">M {currencyState.info.symbol}</span>
 				</div>
 				<div class="mt-4 flex items-center gap-2 text-xs text-rose-400">
 					<TrendingUp class="h-4 w-4 rotate-180" />
-					+4.0% к прошлому месяцу
+					+4.0% {$_('economics.vsLastMonth')}
 				</div>
 			</Card>
 		</div>
@@ -269,7 +273,7 @@
 			<Card class="col-span-1 flex flex-col p-6 lg:col-span-2 xl:col-span-1">
 				<div class="mb-6 flex items-center justify-between">
 					<h3 class="text-lg font-semibold text-white">
-						{#if !$isLoading}{$_('economics.costStructure')}{:else}Структура себестоимости{/if}
+						{$_('economics.costStructure')}
 					</h3>
 					<Badge class="border-slate-700 bg-slate-900/50 pl-2 text-slate-400">
 						<Calendar class="mr-1 h-3 w-3" />
@@ -297,7 +301,10 @@
 										<span class="text-slate-300">{config.label}</span>
 									</div>
 									<div class="text-right">
-										<div class="font-mono text-white">{val.toFixed(2)} ₽</div>
+										<div class="font-mono text-white">
+											{currencyState.convert(val).toFixed(2)}
+											{currencyState.info.symbol}
+										</div>
 										<div class="text-[10px] text-slate-500">
 											{((val / costBreakdown.total) * 100).toFixed(0)}%
 										</div>
@@ -311,7 +318,7 @@
 
 			<!-- Cost Breakdown Details -->
 			<Card>
-				<h3 class="mb-6 text-lg font-semibold text-white">Детализация затрат</h3>
+				<h3 class="mb-6 text-lg font-semibold text-white">{$_('economics.costDetails')}</h3>
 
 				<div class="space-y-4">
 					{#each Object.entries(costConfig) as [key, config] (key)}
@@ -327,13 +334,19 @@
 										<div>
 											<div class="font-medium text-white">{config.label}</div>
 											<div class="text-xs text-slate-400">
-												{((val / costBreakdown.total) * 100).toFixed(1)}% от общих затрат
+												{((val / costBreakdown.total) * 100).toFixed(1)}% {$_(
+													'economics.ofTotalCosts'
+												)}
 											</div>
 										</div>
 									</div>
 									<div class="text-right">
-										<div class="font-mono text-lg text-white">{val.toFixed(2)}</div>
-										<div class="text-xs text-slate-400">₽/кВт·ч</div>
+										<div class="font-mono text-lg text-white">
+											{currencyState.convert(val).toFixed(2)}
+										</div>
+										<div class="text-xs text-slate-400">
+											{currencyState.info.symbol}/{$_('units.kwh')}
+										</div>
 									</div>
 								</div>
 								<div class="h-1.5 overflow-hidden rounded-full bg-slate-700">
@@ -353,7 +366,7 @@
 		<!-- Monthly Trend -->
 		<Card>
 			<h3 class="mb-6 text-lg font-semibold text-white">
-				{#if !$isLoading}{$_('economics.monthlyTrend')}{:else}Динамика затрат{/if}
+				{$_('economics.monthlyTrend')}
 			</h3>
 
 			<div class="h-80 w-full" bind:this={barChartEl}></div>

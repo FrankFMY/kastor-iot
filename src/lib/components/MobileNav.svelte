@@ -45,13 +45,25 @@
 			close();
 		}
 	}
+
+	// Prevent body scroll when menu is open
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			if (open) {
+				document.body.style.overflow = 'hidden';
+			} else {
+				document.body.style.overflow = '';
+			}
+		}
+	});
 </script>
 
-<!-- Mobile Menu Button -->
+<!-- Mobile Menu Button - 44px minimum touch target -->
 <button
 	onclick={() => (open = !open)}
-	class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all duration-200 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-95 lg:hidden"
-	aria-label="Toggle menu"
+	class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition-all duration-200 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-95 lg:hidden"
+	aria-label={open ? $_('nav.closeMenu') : $_('nav.openMenu')}
+	aria-expanded={open}
 >
 	{#if open}
 		<X class="h-5 w-5" />
@@ -62,24 +74,27 @@
 
 <!-- Mobile Menu Overlay -->
 {#if open}
-	<button
-		class="animate-fade-in fixed inset-0 z-40 bg-slate-950/90 backdrop-blur-md lg:hidden"
+	<div
+		class="animate-fade-in fixed inset-0 z-[9998] bg-slate-950/90 backdrop-blur-md lg:hidden"
 		style="animation-duration: 200ms;"
+		role="button"
+		tabindex="-1"
 		onclick={close}
 		onkeydown={handleKeyDown}
-		aria-label="Close menu"
-	></button>
+		aria-label={$_('nav.closeMenu')}
+	></div>
 
 	<!-- Mobile Menu Panel -->
 	<nav
-		class="animate-slide-in-right fixed top-0 left-0 z-50 flex h-full w-72 flex-col border-r border-white/5 bg-slate-950 lg:hidden"
-		style="animation-duration: 250ms;"
+		class="animate-slide-in-left fixed inset-y-0 left-0 z-[9999] flex w-[min(18rem,85vw)] flex-col border-r border-white/10 bg-slate-950 shadow-2xl shadow-black/50 lg:hidden"
+		style="height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left);"
+		aria-label={$_('nav.mainNavigation')}
 	>
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b border-white/5 p-4">
-			<a href="{base}/" onclick={close} class="flex items-center gap-2">
+		<div class="flex items-center justify-between border-b border-white/10 px-4 py-4">
+			<a href="{base}/" onclick={close} class="flex min-h-[44px] items-center gap-2.5">
 				<div
-					class="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 ring-1 ring-cyan-500/30"
+					class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-400 ring-1 ring-cyan-500/30"
 				>
 					<Zap class="h-5 w-5 fill-current" />
 				</div>
@@ -87,14 +102,15 @@
 			</a>
 			<button
 				onclick={close}
-				class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white/5 hover:text-white active:scale-95"
+				class="flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 transition-all hover:bg-white/5 hover:text-white active:scale-95"
+				aria-label={$_('nav.closeMenu')}
 			>
 				<X class="h-5 w-5" />
 			</button>
 		</div>
 
 		<!-- Navigation -->
-		<div class="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+		<div class="flex flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain p-4">
 			{#each navItems as item, i (item.href)}
 				{@const Icon = item.icon}
 				{@const active = isActive(item.href)}
@@ -102,42 +118,47 @@
 					href={item.href}
 					onclick={close}
 					class={cn(
-						'animate-fade-in flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium opacity-0 transition-all duration-200',
+						'animate-fade-in flex min-h-[48px] items-center gap-3.5 rounded-xl px-4 py-3 text-base font-medium opacity-0 transition-all duration-200',
 						active
-							? 'bg-cyan-500/10 text-cyan-400'
-							: 'text-slate-400 hover:bg-white/5 hover:text-white active:scale-[0.98]'
+							? 'bg-cyan-500/15 text-cyan-400 ring-1 ring-cyan-500/20'
+							: 'text-slate-300 hover:bg-white/5 hover:text-white active:scale-[0.98] active:bg-white/10'
 					)}
 					style="animation-delay: {i * 40}ms; animation-fill-mode: forwards;"
+					aria-current={active ? 'page' : undefined}
 				>
-					<Icon class={cn('h-5 w-5 transition-transform', active && 'scale-110')} />
-					<span>{$_(item.label)}</span>
+					<Icon class={cn('h-5 w-5 shrink-0 transition-transform', active && 'scale-110')} />
+					<span class="flex-1">{$_(item.label)}</span>
 					{#if active}
-						<span class="ml-auto h-2 w-2 rounded-full bg-cyan-400"></span>
+						<span class="h-2 w-2 shrink-0 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"
+						></span>
 					{/if}
 				</a>
 			{/each}
 		</div>
 
 		<!-- Footer -->
-		<div class="border-t border-white/5 p-4">
-			<div class="mb-4 flex items-center justify-between gap-4">
-				<div class="flex flex-1 items-center justify-between">
-					<span class="text-xs text-slate-500">{$_('settings.language')}</span>
+		<div class="border-t border-white/10 p-4">
+			<!-- Switchers in a more mobile-friendly layout -->
+			<div class="mb-4 grid grid-cols-2 gap-3">
+				<div class="flex flex-col gap-1.5 rounded-lg bg-white/5 p-3">
+					<span class="text-xs font-medium text-slate-500">{$_('settings.language')}</span>
 					<LanguageSwitcher />
 				</div>
-				<div class="flex flex-1 items-center justify-between border-l border-white/5 pl-4">
-					<span class="text-xs text-slate-500">{$_('common.currency')}</span>
+				<div class="flex flex-col gap-1.5 rounded-lg bg-white/5 p-3">
+					<span class="text-xs font-medium text-slate-500">{$_('common.currency')}</span>
 					<CurrencySwitcher />
 				</div>
 			</div>
+
+			<!-- System Status -->
 			<div
-				class="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400"
+				class="flex items-center gap-2.5 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-400"
 			>
-				<span class="relative flex h-2 w-2">
+				<span class="relative flex h-2.5 w-2.5 shrink-0">
 					<span
 						class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
 					></span>
-					<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+					<span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
 				</span>
 				{$_('app.systemOnline')}
 			</div>

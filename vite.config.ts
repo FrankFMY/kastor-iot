@@ -5,6 +5,8 @@ import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore - vitest/vite version mismatch with vite 7
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 
 	test: {

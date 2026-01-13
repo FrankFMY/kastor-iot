@@ -238,7 +238,41 @@
 			REST API
 		</h2>
 
-		<div class="overflow-x-auto">
+		<!-- Mobile Card View -->
+		<div class="space-y-3 md:hidden">
+			{#each apiEndpoints as endpoint (endpoint.path)}
+				<div class="rounded-lg border border-white/5 bg-white/5 p-3">
+					<div class="mb-2 flex items-center justify-between">
+						<Badge
+							variant={endpoint.method === 'GET'
+								? 'success'
+								: endpoint.method === 'POST'
+									? 'info'
+									: 'warning'}
+						>
+							{endpoint.method}
+						</Badge>
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={() => copyToClipboard(endpoint.path)}
+							class="h-8 w-8 p-0"
+						>
+							{#if copiedEndpoint === endpoint.path}
+								<CheckCircle class="h-4 w-4 text-emerald-400" />
+							{:else}
+								<Copy class="h-4 w-4" />
+							{/if}
+						</Button>
+					</div>
+					<div class="mb-1 font-mono text-xs break-all text-cyan-400">{endpoint.path}</div>
+					<div class="text-sm text-slate-400">{endpoint.description}</div>
+				</div>
+			{/each}
+		</div>
+
+		<!-- Desktop Table View -->
+		<div class="hidden overflow-x-auto md:block">
 			<table class="w-full">
 				<thead>
 					<tr class="border-b border-white/5">
@@ -288,7 +322,7 @@
 			</table>
 		</div>
 
-		<div class="mt-4 flex items-center gap-4">
+		<div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
 			<Button variant="secondary" class="gap-2">
 				<FileJson class="h-4 w-4" />
 				OpenAPI Spec

@@ -397,8 +397,8 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
-				<TrendingUp class="h-7 w-7 text-emerald-400" />
+			<h1 class="flex items-center gap-3 text-xl font-bold text-white sm:text-2xl">
+				<TrendingUp class="h-6 w-6 text-emerald-400 sm:h-7 sm:w-7" />
 				{#if !$isLoading}{$_('analytics.title')}{:else}Business Analytics{/if}
 			</h1>
 			<p class="mt-1 text-sm text-slate-400">
@@ -487,7 +487,7 @@
 	<div class="grid gap-6 lg:grid-cols-3">
 		<!-- Waterfall Chart -->
 		<Card class="lg:col-span-2">
-			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+			<h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
 				<TrendingUp class="h-5 w-5 text-cyan-400" />
 				{$_('analytics.profitWaterfall')}
 			</h3>
@@ -496,7 +496,7 @@
 
 		<!-- ROI Gauge -->
 		<Card>
-			<h3 class="mb-2 text-center text-lg font-semibold text-white">
+			<h3 class="mb-2 text-center text-base font-semibold text-white sm:text-lg">
 				{#if !$isLoading}{$_('analytics.roiTitle')}{:else}Return on Investment{/if}
 			</h3>
 			<div class="h-52 w-full" bind:this={roiChartEl}></div>
@@ -514,11 +514,11 @@
 	<div class="grid gap-6 lg:grid-cols-2">
 		<!-- Downtime Analysis -->
 		<Card>
-			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+			<h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
 				<Clock class="h-5 w-5 text-cyan-400" />
 				{#if !$isLoading}{$_('analytics.downtimeAnalysis')}{:else}Downtime Analysis{/if}
 			</h3>
-			<div class="grid grid-cols-2 gap-4">
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<div class="h-48" bind:this={downtimeChartEl}></div>
 				<div class="space-y-3">
 					{#each downtimeAnalysis as item (item.reasonKey)}
@@ -548,7 +548,7 @@
 
 		<!-- Cost Savings Breakdown -->
 		<Card>
-			<h3 class="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+			<h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
 				<DollarSign class="h-5 w-5 text-emerald-400" />
 				{#if !$isLoading}{$_('analytics.costSavingsBreakdown')}{:else}Cost Savings Breakdown{/if}
 			</h3>

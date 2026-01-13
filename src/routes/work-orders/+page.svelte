@@ -341,7 +341,7 @@
 			e.preventDefault();
 			handleCreateWorkOrder();
 		}}
-		class="space-y-4"
+		class="max-h-[70vh] space-y-4 overflow-y-auto px-1"
 	>
 		<div>
 			<label for="wo-title" class="mb-1 block text-sm font-medium text-slate-300">Title *</label>
@@ -369,7 +369,7 @@
 			></textarea>
 		</div>
 
-		<div class="grid grid-cols-2 gap-4">
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
 				<label for="wo-engine" class="mb-1 block text-sm font-medium text-slate-300">Engine</label>
 				<select
@@ -403,7 +403,7 @@
 			</div>
 		</div>
 
-		<div class="grid grid-cols-2 gap-4">
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
 				<label for="wo-assigned" class="mb-1 block text-sm font-medium text-slate-300"
 					>Assigned To</label
@@ -428,7 +428,7 @@
 			</div>
 		</div>
 
-		<div class="grid grid-cols-2 gap-4">
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div>
 				<label for="wo-hours" class="mb-1 block text-sm font-medium text-slate-300"
 					>Estimated Hours</label
@@ -457,19 +457,19 @@
 				<p class="mt-1 text-xs text-slate-500">Separate with commas</p>
 			</div>
 		</div>
-
-		<div class="flex justify-end gap-3 border-t border-white/5 pt-4">
-			<Button
-				type="button"
-				variant="secondary"
-				onclick={() => {
-					showCreateModal = false;
-					resetForm();
-				}}
-			>
-				Cancel
-			</Button>
-			<Button type="submit">Create Work Order</Button>
-		</div>
 	</form>
+
+	<div class="mt-4 flex justify-end gap-3 border-t border-white/5 pt-4">
+		<Button
+			type="button"
+			variant="secondary"
+			onclick={() => {
+				showCreateModal = false;
+				resetForm();
+			}}
+		>
+			Cancel
+		</Button>
+		<Button type="submit" onclick={handleCreateWorkOrder}>Create Work Order</Button>
+	</div>
 </Modal>

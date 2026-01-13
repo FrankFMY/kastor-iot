@@ -12,6 +12,96 @@ Real-time monitoring and analytics platform for gas-powered engines (Weichai 16V
 
 ---
 
+## 🚀 Быстрый запуск ДЕМО (1 минута)
+
+### Вариант 1: Через Makefile (рекомендуется)
+
+```bash
+# Клонируем и запускаем
+git clone https://github.com/FrankFMY/kastor-IoT.git
+cd kastor-IoT
+make demo
+```
+
+### Вариант 2: Через скрипт
+
+```bash
+git clone https://github.com/FrankFMY/kastor-IoT.git
+cd kastor-IoT
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh demo
+```
+
+### Вариант 3: Напрямую через Docker Compose
+
+```bash
+git clone https://github.com/FrankFMY/kastor-IoT.git
+cd kastor-IoT
+cp .env.demo .env
+docker compose -f docker-compose.production.yaml --profile demo up -d --build
+```
+
+### 📱 После запуска
+
+| Сервис             | URL                    | Логин   | Пароль              |
+| ------------------ | ---------------------- | ------- | ------------------- |
+| **Веб-приложение** | http://localhost:3000  | `admin` | `admin`             |
+| **EMQX Dashboard** | http://localhost:18083 | `admin` | `kastor_admin_demo` |
+
+> **Требования:** Docker и Docker Compose. Установка Docker: `curl -fsSL https://get.docker.com | sh`
+
+---
+
+## 🖥️ Развертывание на VPS (Beget, DigitalOcean, etc.)
+
+### Шаг 1: Подготовка сервера
+
+```bash
+# Подключаемся к серверу
+ssh root@your-server-ip
+
+# Устанавливаем Docker (если не установлен)
+curl -fsSL https://get.docker.com | sh
+systemctl enable docker
+systemctl start docker
+
+# Устанавливаем Git (если не установлен)
+apt update && apt install -y git
+```
+
+### Шаг 2: Разворачиваем KASTOR
+
+```bash
+# Клонируем репозиторий
+git clone https://github.com/FrankFMY/kastor-IoT.git
+cd kastor-IoT
+
+# Запускаем ДЕМО
+make demo
+
+# Или для Production (со своими паролями):
+cp .env.example .env
+nano .env  # Отредактируйте пароли!
+make production
+```
+
+### Шаг 3: Готово! 🎉
+
+Откройте в браузере: `http://your-server-ip:3000`
+
+### Полезные команды
+
+```bash
+make help        # Справка по командам
+make logs        # Просмотр логов
+make stop        # Остановить
+make restart     # Перезапустить
+make status      # Статус контейнеров
+make clean       # Удалить всё (включая данные!)
+```
+
+---
+
 ## Features
 
 - **Real-time Dashboard** — Live telemetry from 6 gas engines via MQTT/SSE

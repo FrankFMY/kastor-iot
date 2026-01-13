@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { _, isLoading } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import { Card, Badge } from '$lib/components/ui/index.js';
 	import TrendingUp from 'lucide-svelte/icons/trending-up';

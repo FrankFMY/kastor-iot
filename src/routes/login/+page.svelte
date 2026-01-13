@@ -17,6 +17,19 @@
 		loading = true;
 		error = null;
 
+		// Demo Authentication
+		if ((email === 'admin' || email === 'admin@kastor.io') && password === 'admin') {
+			// Set demo cookie
+			document.cookie = 'demo_session=true; path=/; max-age=86400; samesite=strict';
+
+			// Simulate network delay
+			setTimeout(() => {
+				loading = false;
+				goto('/');
+			}, 800);
+			return;
+		}
+
 		try {
 			const result = await signIn.email({
 				email,
@@ -81,11 +94,11 @@
 							<Mail class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
 							<input
 								id="email"
-								type="email"
+								type="text"
 								bind:value={email}
 								required
-								autocomplete="email"
-								placeholder="operator@kastor.io"
+								autocomplete="username"
+								placeholder="operator@kastor.io or admin"
 								class="w-full rounded-lg border border-slate-700 bg-slate-800 py-2.5 pr-3 pl-10 text-white placeholder-slate-500 transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none"
 							/>
 						</div>

@@ -720,10 +720,10 @@
 						<Badge variant="default">{$_('engine.topView')}</Badge>
 					</h3>
 
-					<div class="grid grid-cols-4 gap-3">
+					<div class="grid grid-cols-4 gap-2 xs:gap-3">
 						{#each cylinderTemps as temp, i (i)}
 							<div
-								class="group relative flex aspect-square items-center justify-center rounded-md text-xs font-bold text-white/50 transition-all duration-500 {getCylinderColor(
+								class="group relative flex aspect-square items-center justify-center rounded-md text-[10px] font-bold text-white/50 transition-all duration-500 xs:text-xs {getCylinderColor(
 									temp
 								)}"
 							>
@@ -936,8 +936,8 @@
 				<div class="mb-6 rounded-lg bg-slate-800/50 p-4">
 					<div class="mb-2 text-sm text-slate-400">{$_('maintenance.nextService')}</div>
 					<div class="flex items-baseline gap-2">
-						<span class="text-4xl font-bold text-emerald-400">847</span>
-						<span class="text-lg text-slate-400">{$_('units.hours')}</span>
+						<span class="text-3xl font-bold text-emerald-400 sm:text-4xl">847</span>
+						<span class="text-base text-slate-400 sm:text-lg">{$_('units.hours')}</span>
 					</div>
 					<div class="mt-2 text-xs text-slate-500">
 						{$_('engine.riskRange')}: 780 - 920 {$_('units.hours')}

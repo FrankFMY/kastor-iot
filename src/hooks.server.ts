@@ -4,7 +4,7 @@ import { telemetry, engines, events, alerts } from '$lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { auth } from '$lib/server/auth.js';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
-import type { Handle } from '@sveltejs/kit';
+import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { building } from '$app/environment';
 import { env } from '$env/dynamic/private';
@@ -307,6 +307,34 @@ const authHandler: Handle = async ({ event, resolve }) => {
 
 	// Protected routes check
 	if (!isPublicRoute && !session) {
+		// Check for demo session cookie
+		const cookies = event.request.headers.get('cookie');
+		const isDemo = cookies?.includes('demo_session=true');
+
+		if (isDemo) {
+			// Inject mock user for demo session
+			event.locals.user = {
+				id: 'demo-user',
+				email: 'admin@kastor.io',
+				emailVerified: true,
+				name: 'Admin User',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				role: 'admin'
+			};
+			event.locals.session = {
+				id: 'demo-session',
+				userId: 'demo-user',
+				expiresAt: new Date(Date.now() + 86400 * 1000),
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				token: 'demo-token',
+				ipAddress: event.getClientAddress(),
+				userAgent: event.request.headers.get('user-agent')
+			};
+			return resolve(event);
+		}
+
 		// For API routes, return 401
 		if (isApiRoute) {
 			return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -316,7 +344,7 @@ const authHandler: Handle = async ({ event, resolve }) => {
 		}
 		// For page routes, redirect to login
 		// Temporarily disabled for development - enable in production
-		// return redirect(302, '/login');
+		throw redirect(302, '/login');
 	}
 
 	return resolve(event);

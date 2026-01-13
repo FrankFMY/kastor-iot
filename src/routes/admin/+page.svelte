@@ -149,47 +149,51 @@
 		</div>
 	</div>
 
-	<!-- Tabs -->
-	<div class="flex gap-1 rounded-lg border border-white/5 bg-slate-900/50 p-1">
-		<button
-			type="button"
-			onclick={() => (activeTab = 'engines')}
-			class={cn(
-				'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition',
-				activeTab === 'engines'
-					? 'bg-cyan-500/20 text-cyan-400'
-					: 'text-slate-400 hover:bg-white/5 hover:text-white'
-			)}
+	<!-- Tabs - Scrollable on mobile -->
+	<div class="-mx-4 px-4 sm:mx-0 sm:px-0">
+		<div
+			class="scrollbar-hide flex gap-1 overflow-x-auto rounded-lg border border-white/5 bg-slate-900/50 p-1"
 		>
-			<Cpu class="h-4 w-4" />
-			{$_('admin.tabs.engines')}
-		</button>
-		<button
-			type="button"
-			onclick={() => (activeTab = 'users')}
-			class={cn(
-				'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition',
-				activeTab === 'users'
-					? 'bg-cyan-500/20 text-cyan-400'
-					: 'text-slate-400 hover:bg-white/5 hover:text-white'
-			)}
-		>
-			<Users class="h-4 w-4" />
-			{$_('admin.tabs.users')}
-		</button>
-		<button
-			type="button"
-			onclick={() => (activeTab = 'connections')}
-			class={cn(
-				'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition',
-				activeTab === 'connections'
-					? 'bg-cyan-500/20 text-cyan-400'
-					: 'text-slate-400 hover:bg-white/5 hover:text-white'
-			)}
-		>
-			<Link class="h-4 w-4" />
-			Подключения
-		</button>
+			<button
+				type="button"
+				onclick={() => (activeTab = 'engines')}
+				class={cn(
+					'flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition sm:px-4',
+					activeTab === 'engines'
+						? 'bg-cyan-500/20 text-cyan-400'
+						: 'text-slate-400 hover:bg-white/5 hover:text-white'
+				)}
+			>
+				<Cpu class="h-4 w-4" />
+				<span class="whitespace-nowrap">{$_('admin.tabs.engines')}</span>
+			</button>
+			<button
+				type="button"
+				onclick={() => (activeTab = 'users')}
+				class={cn(
+					'flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition sm:px-4',
+					activeTab === 'users'
+						? 'bg-cyan-500/20 text-cyan-400'
+						: 'text-slate-400 hover:bg-white/5 hover:text-white'
+				)}
+			>
+				<Users class="h-4 w-4" />
+				<span class="whitespace-nowrap">{$_('admin.tabs.users')}</span>
+			</button>
+			<button
+				type="button"
+				onclick={() => (activeTab = 'connections')}
+				class={cn(
+					'flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition sm:px-4',
+					activeTab === 'connections'
+						? 'bg-cyan-500/20 text-cyan-400'
+						: 'text-slate-400 hover:bg-white/5 hover:text-white'
+				)}
+			>
+				<Link class="h-4 w-4" />
+				<span class="whitespace-nowrap">{$_('admin.tabs.connections')}</span>
+			</button>
+		</div>
 	</div>
 
 	<!-- Engines Tab -->
@@ -264,65 +268,112 @@
 		<div class="flex justify-end">
 			<Button class="gap-2">
 				<Plus class="h-4 w-4" />
-				Добавить пользователя
+				{$_('admin.users.addUser')}
 			</Button>
 		</div>
 
-		<Card class="overflow-hidden p-0">
-			<table class="w-full">
-				<thead class="border-b border-white/5 bg-slate-900/50">
-					<tr>
-						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
-							>Пользователь</th
-						>
-						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Роль</th>
-						<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase">Статус</th>
-						<th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase"
-							>Действия</th
-						>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-white/5">
-					{#each users as user (user.id)}
-						<tr class="transition hover:bg-white/5">
-							<td class="px-4 py-4">
-								<div class="flex items-center gap-3">
-									<div
-										class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-medium text-white"
-									>
-										{user.name
-											.split(' ')
-											.map((n) => n[0])
-											.join('')}
-									</div>
-									<div>
-										<div class="font-medium text-white">{user.name}</div>
-										<div class="text-xs text-slate-500">{user.email}</div>
-									</div>
-								</div>
-							</td>
-							<td class="px-4 py-4">
-								<Badge variant={getRoleBadge(user.role)}>{user.role}</Badge>
-							</td>
-							<td class="px-4 py-4">
-								{#if user.active}
-									<Badge variant="success">Активен</Badge>
-								{:else}
-									<Badge variant="secondary">Неактивен</Badge>
-								{/if}
-							</td>
-							<td class="px-4 py-4 text-right">
-								<Button variant="ghost" size="sm">
-									<Pencil class="h-4 w-4" />
-								</Button>
-								<Button variant="ghost" size="sm" class="text-rose-400 hover:text-rose-300">
-									<Trash2 class="h-4 w-4" />
-								</Button>
-							</td>
+		<!-- Mobile Card View -->
+		<div class="space-y-3 md:hidden">
+			{#each users as user (user.id)}
+				<Card>
+					<div class="flex items-start justify-between gap-3">
+						<div class="flex items-center gap-3">
+							<div
+								class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-bold text-white"
+							>
+								{user.name
+									.split(' ')
+									.map((n) => n[0])
+									.join('')}
+							</div>
+							<div class="min-w-0">
+								<div class="font-medium text-white">{user.name}</div>
+								<div class="truncate text-xs text-slate-500">{user.email}</div>
+							</div>
+						</div>
+						<div class="flex shrink-0 gap-1">
+							<Button variant="ghost" size="sm">
+								<Pencil class="h-4 w-4" />
+							</Button>
+							<Button variant="ghost" size="sm" class="text-rose-400 hover:text-rose-300">
+								<Trash2 class="h-4 w-4" />
+							</Button>
+						</div>
+					</div>
+					<div class="mt-3 flex flex-wrap items-center gap-2">
+						<Badge variant={getRoleBadge(user.role)}>{user.role}</Badge>
+						{#if user.active}
+							<Badge variant="success">{$_('admin.users.status.active')}</Badge>
+						{:else}
+							<Badge variant="secondary">{$_('admin.users.status.inactive')}</Badge>
+						{/if}
+					</div>
+				</Card>
+			{/each}
+		</div>
+
+		<!-- Desktop Table View -->
+		<Card class="hidden overflow-hidden p-0 md:block">
+			<div class="overflow-x-auto">
+				<table class="w-full">
+					<thead class="border-b border-white/5 bg-slate-900/50">
+						<tr>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
+								>{$_('admin.users.table.user')}</th
+							>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
+								>{$_('admin.users.table.role')}</th
+							>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase"
+								>{$_('admin.users.table.status')}</th
+							>
+							<th class="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase"
+								>{$_('admin.users.table.actions')}</th
+							>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
+					</thead>
+					<tbody class="divide-y divide-white/5">
+						{#each users as user (user.id)}
+							<tr class="transition hover:bg-white/5">
+								<td class="px-4 py-4">
+									<div class="flex items-center gap-3">
+										<div
+											class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-medium text-white"
+										>
+											{user.name
+												.split(' ')
+												.map((n) => n[0])
+												.join('')}
+										</div>
+										<div>
+											<div class="font-medium text-white">{user.name}</div>
+											<div class="text-xs text-slate-500">{user.email}</div>
+										</div>
+									</div>
+								</td>
+								<td class="px-4 py-4">
+									<Badge variant={getRoleBadge(user.role)}>{user.role}</Badge>
+								</td>
+								<td class="px-4 py-4">
+									{#if user.active}
+										<Badge variant="success">{$_('admin.users.status.active')}</Badge>
+									{:else}
+										<Badge variant="secondary">{$_('admin.users.status.inactive')}</Badge>
+									{/if}
+								</td>
+								<td class="px-4 py-4 text-right">
+									<Button variant="ghost" size="sm">
+										<Pencil class="h-4 w-4" />
+									</Button>
+									<Button variant="ghost" size="sm" class="text-rose-400 hover:text-rose-300">
+										<Trash2 class="h-4 w-4" />
+									</Button>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 		</Card>
 	{/if}
 

@@ -1,5 +1,9 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapterAuto from '@sveltejs/adapter-auto';
+import adapterNode from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+// Используем Node adapter для production/Docker, Auto adapter для development
+const isProduction = process.env.NODE_ENV === 'production';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -8,10 +12,15 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
-		adapter: adapter()
+		// В production используем Node adapter для Docker
+		// В development используем Auto adapter
+		adapter: isProduction
+			? adapterNode({
+					out: 'build',
+					precompress: true,
+					envPrefix: ''
+				})
+			: adapterAuto()
 	}
 };
 

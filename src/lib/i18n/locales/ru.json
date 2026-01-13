@@ -19,7 +19,10 @@
 		"workOrders": "Наряд-заказы",
 		"calendar": "Календарь",
 		"comparison": "Сравнение",
-		"dashboards": "Дашборды"
+		"dashboards": "Дашборды",
+		"openMenu": "Открыть меню",
+		"closeMenu": "Закрыть меню",
+		"mainNavigation": "Главная навигация"
 	},
 	"dashboard": {
 		"title": "Дашборд",
@@ -177,32 +180,43 @@
 		"productionLabel": "Выработка (МВт·ч)"
 	},
 	"alerts": {
-		"title": "Алерты",
-		"subtitle": "Уведомления и системные оповещения",
+		"title": "Центр алертов",
+		"subtitle": "Мониторинг и управление системными оповещениями",
 		"all": "Все",
 		"active": "Активные",
 		"acknowledged": "Подтвержденные",
 		"resolved": "Решенные",
+		"resolvedStatus": "Решённые",
 		"severity": {
 			"info": "Информация",
 			"warning": "Предупреждение",
 			"critical": "Критический"
 		},
-		"noAlerts": "Алертов не найдено",
+		"noAlerts": "Нет алертов по выбранным фильтрам",
 		"acknowledge": "Подтвердить",
 		"resolve": "Решить",
 		"viewDetails": "Подробнее",
-		"rules": {
-			"title": "Правила алертов",
-			"add": "Добавить правило",
-			"edit": "Редактировать правило",
-			"delete": "Удалить правило"
-		},
-		"stats": {
-			"active": "Активные",
-			"critical": "Критические",
-			"resolved24h": "Решено (24ч)"
-		}
+		"rules": "Правила",
+		"filters": "Фильтры",
+		"filtersActive": "активно",
+		"clearFilters": "Сбросить фильтры",
+		"allLevels": "Все уровни",
+		"allStatuses": "Все статусы",
+		"critical": "Критические",
+		"warnings": "Предупреждения",
+		"info": "Информация",
+		"resolved24h": "Решено (24ч)",
+		"lastHour": "Последний час",
+		"last6Hours": "Последние 6 часов",
+		"last24Hours": "Последние 24 часа",
+		"last7Days": "Последние 7 дней",
+		"status": "Статус",
+		"period": "Период",
+		"value": "Значение",
+		"threshold": "Порог",
+		"acknowledgedBy": "Подтвердил",
+		"minutesAgo": "мин назад",
+		"hoursAgo": "ч назад"
 	},
 	"workOrders": {
 		"title": "Наряд-заказы",
@@ -301,6 +315,16 @@
 				"operator": "Оператор",
 				"technician": "Техник",
 				"viewer": "Наблюдатель"
+			},
+			"status": {
+				"active": "Активен",
+				"inactive": "Неактивен"
+			},
+			"table": {
+				"user": "Пользователь",
+				"role": "Роль",
+				"status": "Статус",
+				"actions": "Действия"
 			}
 		}
 	},

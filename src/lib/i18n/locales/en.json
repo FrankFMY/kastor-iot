@@ -19,7 +19,10 @@
 		"workOrders": "Work Orders",
 		"calendar": "Calendar",
 		"comparison": "Comparison",
-		"dashboards": "Dashboards"
+		"dashboards": "Dashboards",
+		"openMenu": "Open menu",
+		"closeMenu": "Close menu",
+		"mainNavigation": "Main navigation"
 	},
 	"dashboard": {
 		"title": "Dashboard",
@@ -177,32 +180,43 @@
 		"productionLabel": "Production (MWh)"
 	},
 	"alerts": {
-		"title": "Alerts",
-		"subtitle": "Notifications and System Alerts",
+		"title": "Alert Center",
+		"subtitle": "Monitor and manage system alerts",
 		"all": "All",
 		"active": "Active",
 		"acknowledged": "Acknowledged",
 		"resolved": "Resolved",
+		"resolvedStatus": "Resolved",
 		"severity": {
 			"info": "Info",
 			"warning": "Warning",
 			"critical": "Critical"
 		},
-		"noAlerts": "No alerts found",
+		"noAlerts": "No alerts matching selected filters",
 		"acknowledge": "Acknowledge",
 		"resolve": "Resolve",
 		"viewDetails": "View Details",
-		"rules": {
-			"title": "Alert Rules",
-			"add": "Add Rule",
-			"edit": "Edit Rule",
-			"delete": "Delete Rule"
-		},
-		"stats": {
-			"active": "Active",
-			"critical": "Critical",
-			"resolved24h": "Resolved (24h)"
-		}
+		"rules": "Rules",
+		"filters": "Filters",
+		"filtersActive": "active",
+		"clearFilters": "Clear filters",
+		"allLevels": "All levels",
+		"allStatuses": "All statuses",
+		"critical": "Critical",
+		"warnings": "Warnings",
+		"info": "Info",
+		"resolved24h": "Resolved (24h)",
+		"lastHour": "Last hour",
+		"last6Hours": "Last 6 hours",
+		"last24Hours": "Last 24 hours",
+		"last7Days": "Last 7 days",
+		"status": "Status",
+		"period": "Period",
+		"value": "Value",
+		"threshold": "Threshold",
+		"acknowledgedBy": "Acknowledged by",
+		"minutesAgo": "min ago",
+		"hoursAgo": "h ago"
 	},
 	"workOrders": {
 		"title": "Work Orders",
@@ -301,6 +315,16 @@
 				"operator": "Operator",
 				"technician": "Technician",
 				"viewer": "Viewer"
+			},
+			"status": {
+				"active": "Active",
+				"inactive": "Inactive"
+			},
+			"table": {
+				"user": "User",
+				"role": "Role",
+				"status": "Status",
+				"actions": "Actions"
 			}
 		}
 	},

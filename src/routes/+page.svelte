@@ -12,6 +12,7 @@
 	import Gauge from 'lucide-svelte/icons/gauge';
 	import Banknote from 'lucide-svelte/icons/banknote';
 	import Server from 'lucide-svelte/icons/server';
+	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import { cn } from '$lib/utils.js';
 	import { currency as currencyState } from '$lib/state/currency.svelte.js';
 	import type { DashboardData, EngineWithMetrics } from '$lib/types/index.js';
@@ -31,6 +32,7 @@
 	let lastUpdate = $state<Date | null>(null);
 	let showErrorToast = $state(false);
 	let errorMessage = $state('');
+	let eventsExpanded = $state(false);
 
 	function triggerError(msg: string) {
 		errorMessage = msg;
@@ -183,12 +185,18 @@
 			0
 		);
 	});
+
+	// Count of critical/warning events for badge
+	const criticalEventsCount = $derived.by(() => {
+		if (!data) return 0;
+		return data.events.filter((e) => e.level === 'error' || e.level === 'warning').length;
+	});
 </script>
 
 {#if !data}
 	<!-- Loading skeleton -->
 	<div class="space-y-6">
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+		<div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
 			{#each { length: 4 } as _item, i (i)}
 				<Card>
 					<Skeleton height="1rem" width="60%" />
@@ -198,7 +206,7 @@
 			{/each}
 		</div>
 		<Skeleton height="1.5rem" width="200px" />
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each { length: 6 } as _item, i (i)}
 				<Card>
 					<Skeleton height="8rem" />
@@ -207,43 +215,50 @@
 		</div>
 	</div>
 {:else}
-	<div class="grid grid-cols-1 gap-6 xl:grid-cols-4 xl:items-start">
+	<div class="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-4 xl:items-start">
 		<!-- Main Content (Left) -->
-		<div class="space-y-6 xl:col-span-3">
+		<div class="space-y-4 sm:space-y-6 xl:col-span-3">
 			<!-- Hero Stats -->
-			<div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+			<div class="grid grid-cols-2 gap-2 xs:gap-3 sm:gap-4 lg:grid-cols-4">
 				<!-- Fleet Status Card -->
-				<Card class="group relative overflow-hidden">
+				<Card class="group relative overflow-hidden p-3 sm:p-4 lg:p-6">
 					<div
 						class="absolute -top-4 -right-4 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Server size={80} class="sm:hidden" />
-						<Server size={100} class="hidden sm:block" />
+						<Server size={60} class="sm:hidden" />
+						<Server size={80} class="hidden sm:block lg:hidden" />
+						<Server size={100} class="hidden lg:block" />
 					</div>
-					<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+					<h3 class="text-[10px] font-medium text-slate-400 xs:text-xs sm:text-sm">
 						{$_('dashboard.fleetStatus.title')}
 					</h3>
 					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
-						<span class="text-2xl font-bold tracking-tight text-white sm:text-4xl">
+						<span
+							class="text-xl font-bold tracking-tight text-white xs:text-2xl sm:text-3xl lg:text-4xl"
+						>
 							{fleetStatus.online}
 						</span>
-						<span class="text-xs font-medium text-slate-500 sm:text-sm">/ {fleetStatus.total}</span>
+						<span class="text-[10px] font-medium text-slate-500 xs:text-xs sm:text-sm"
+							>/ {fleetStatus.total}</span
+						>
 					</div>
-					<div class="mt-2 flex flex-wrap items-center gap-2 text-xs sm:mt-4 sm:gap-4">
-						<span class="flex items-center gap-1 text-emerald-400 sm:gap-1.5">
-							<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 sm:h-2 sm:w-2"></span>
+					<div
+						class="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] xs:gap-2 xs:text-xs sm:mt-4 sm:gap-3"
+					>
+						<span class="flex items-center gap-1 text-emerald-400">
+							<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
 							{fleetStatus.online}
-							<span class="hidden sm:inline">{$_('dashboard.fleetStatus.online')}</span>
+							<span class="hidden xs:inline">{$_('dashboard.fleetStatus.online')}</span>
 						</span>
 						{#if fleetStatus.warning > 0}
-							<span class="flex items-center gap-1 text-amber-400 sm:gap-1.5">
-								<span class="h-1.5 w-1.5 rounded-full bg-amber-500 sm:h-2 sm:w-2"></span>
+							<span class="flex items-center gap-1 text-amber-400">
+								<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
 								{fleetStatus.warning}
 							</span>
 						{/if}
 						{#if fleetStatus.offline > 0}
-							<span class="flex items-center gap-1 text-rose-400 sm:gap-1.5">
-								<span class="h-1.5 w-1.5 rounded-full bg-rose-500 sm:h-2 sm:w-2"></span>
+							<span class="flex items-center gap-1 text-rose-400">
+								<span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
 								{fleetStatus.offline}
 							</span>
 						{/if}
@@ -251,45 +266,56 @@
 				</Card>
 
 				<!-- Power Card -->
-				<Card class="group relative overflow-hidden">
+				<Card class="group relative overflow-hidden p-3 sm:p-4 lg:p-6">
 					<div
 						class="absolute -top-4 -right-4 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Activity size={80} class="sm:hidden" />
-						<Activity size={100} class="hidden sm:block" />
+						<Activity size={60} class="sm:hidden" />
+						<Activity size={80} class="hidden sm:block lg:hidden" />
+						<Activity size={100} class="hidden lg:block" />
 					</div>
-					<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+					<h3 class="text-[10px] font-medium text-slate-400 xs:text-xs sm:text-sm">
 						{$_('dashboard.totalOutput')}
 					</h3>
 					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
-						<span class="text-2xl font-bold tracking-tight text-white tabular-nums sm:text-4xl">
+						<span
+							class="text-xl font-bold tracking-tight text-white tabular-nums xs:text-2xl sm:text-3xl lg:text-4xl"
+						>
 							<NumberTicker value={data.summary.totalPowerMW * 1000} unit="" />
 						</span>
-						<span class="text-xs font-medium text-slate-500 sm:text-sm">{$_('common.kw')}</span>
+						<span class="text-[10px] font-medium text-slate-500 xs:text-xs sm:text-sm"
+							>{$_('common.kw')}</span
+						>
 					</div>
-					<div class="mt-2 flex items-center gap-1 text-xs text-emerald-400 sm:mt-4 sm:gap-2">
-						<ArrowUpRight size={12} class="sm:hidden" />
+					<div
+						class="mt-2 flex items-center gap-1 text-[10px] text-emerald-400 xs:text-xs sm:mt-4 sm:gap-2"
+					>
+						<ArrowUpRight size={10} class="xs:hidden" />
+						<ArrowUpRight size={12} class="hidden xs:block sm:hidden" />
 						<ArrowUpRight size={14} class="hidden sm:block" />
 						<span>{Math.round(data.summary.efficiency)}% {$_('dashboard.ofTarget')}</span>
 					</div>
 				</Card>
 
 				<!-- Efficiency Card -->
-				<Card class="group relative overflow-hidden">
+				<Card class="group relative overflow-hidden p-3 sm:p-4 lg:p-6">
 					<div
 						class="absolute -top-4 -right-4 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Gauge size={80} class="sm:hidden" />
-						<Gauge size={100} class="hidden sm:block" />
+						<Gauge size={60} class="sm:hidden" />
+						<Gauge size={80} class="hidden sm:block lg:hidden" />
+						<Gauge size={100} class="hidden lg:block" />
 					</div>
-					<h3 class="text-xs font-medium text-slate-400 sm:text-sm">
+					<h3 class="text-[10px] font-medium text-slate-400 xs:text-xs sm:text-sm">
 						{$_('dashboard.plantEfficiency')}
 					</h3>
 					<div class="mt-1 flex items-baseline gap-1 sm:mt-2 sm:gap-2">
-						<span class="text-2xl font-bold tracking-tight text-white tabular-nums sm:text-4xl">
+						<span
+							class="text-xl font-bold tracking-tight text-white tabular-nums xs:text-2xl sm:text-3xl lg:text-4xl"
+						>
 							{data.summary.efficiency.toFixed(1)}
 						</span>
-						<span class="text-xs font-medium text-slate-500 sm:text-sm">%</span>
+						<span class="text-[10px] font-medium text-slate-500 xs:text-xs sm:text-sm">%</span>
 					</div>
 					<div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800 sm:mt-4 sm:h-1.5">
 						<div
@@ -300,22 +326,25 @@
 				</Card>
 
 				<!-- Money Drain Card -->
-				<Card variant="danger" class="group relative overflow-hidden">
+				<Card variant="danger" class="group relative overflow-hidden p-3 sm:p-4 lg:p-6">
 					<div
 						class="absolute -top-4 -right-4 text-rose-500 opacity-10 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-20"
 					>
-						<Banknote size={80} class="sm:hidden" />
-						<Banknote size={100} class="hidden sm:block" />
+						<Banknote size={60} class="sm:hidden" />
+						<Banknote size={80} class="hidden sm:block lg:hidden" />
+						<Banknote size={100} class="hidden lg:block" />
 					</div>
-					<h3 class="text-xs font-medium text-rose-200 sm:text-sm">
+					<h3 class="text-[10px] font-medium text-rose-200 xs:text-xs sm:text-sm">
 						{$_('dashboard.financialLoss')}
 					</h3>
 					<div class="neon-text-red mt-1 flex items-baseline gap-1 text-rose-400 sm:mt-2 sm:gap-2">
-						<span class="text-2xl font-bold tracking-tight tabular-nums sm:text-4xl">
+						<span
+							class="text-xl font-bold tracking-tight tabular-nums xs:text-2xl sm:text-3xl lg:text-4xl"
+						>
 							<NumberTicker value={data.summary.currentLoss} isCurrency={true} />
 						</span>
 					</div>
-					<div class="mt-2 text-xs text-rose-300/60 sm:mt-4">
+					<div class="mt-2 text-[10px] text-rose-300/60 xs:text-xs sm:mt-4">
 						<span class="hidden sm:inline">{$_('dashboard.potentialMonthly')}: </span>
 						<span class="sm:hidden">{$_('dashboard.potentialMonthlyShort')}: </span>
 						{currencyState.info.symbol}{(
@@ -327,7 +356,7 @@
 			</div>
 
 			<!-- OEE and Downtime Row -->
-			<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+			<div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
 				<OEEWidget
 					totalPowerMW={data.summary.totalPowerMW}
 					plannedPowerMW={data.summary.totalPlannedMW}
@@ -336,13 +365,13 @@
 				<DowntimeTimeline />
 			</div>
 
-			<!-- Engine Grid -->
-			<div class="flex items-center justify-between">
-				<h2 class="flex items-center gap-2 text-lg font-semibold text-white">
+			<!-- Engine Grid Header -->
+			<div class="flex flex-col gap-2 xs:flex-row xs:items-center xs:justify-between">
+				<h2 class="flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
 					<div class="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></div>
 					{$_('dashboard.liveFleetStatus')}
 				</h2>
-				<div class="flex items-center gap-2 text-xs">
+				<div class="flex items-center gap-2 text-[10px] xs:text-xs">
 					{#if connectionStatus === 'connected'}
 						<span class="flex items-center gap-1.5 text-emerald-400">
 							<span class="relative flex h-2 w-2">
@@ -351,7 +380,7 @@
 								></span>
 								<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
 							</span>
-							{$_('connection.liveSSE')}
+							<span class="hidden xs:inline">{$_('connection.liveSSE')}</span>
 						</span>
 					{:else if connectionStatus === 'polling'}
 						<span class="flex items-center gap-1.5 text-amber-400">
@@ -372,11 +401,12 @@
 				</div>
 			</div>
 
-			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<!-- Engine Grid -->
+			<div class="grid grid-cols-1 gap-2 xs:gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{#each data.engines as engine, i (engine.id)}
 					<a
 						href="{base}/engine/{engine.id}"
-						class="glass-card card-hover-lift group animate-fade-in relative rounded-xl p-4 opacity-0 sm:p-5"
+						class="glass-card card-hover-lift group animate-fade-in relative rounded-xl p-3 opacity-0 xs:p-4 sm:p-5"
 						style="animation-delay: {i * 50}ms; animation-fill-mode: forwards;"
 						aria-label={$_('dashboard.engineDetails', { values: { id: engine.id.toUpperCase() } })}
 					>
@@ -387,31 +417,37 @@
 						></div>
 
 						<!-- Status Indicator -->
-						<div class="absolute top-4 right-4 sm:top-5 sm:right-5">
+						<div class="absolute top-3 right-3 xs:top-4 xs:right-4 sm:top-5 sm:right-5">
 							<StatusIndicator status={engine.status} />
 						</div>
 
-						<div class="mb-3 sm:mb-4">
+						<div class="mb-2 xs:mb-3 sm:mb-4">
 							<div
-								class="text-base font-bold text-white transition-colors duration-200 group-hover:text-cyan-400 sm:text-lg"
+								class="text-sm font-bold text-white transition-colors duration-200 group-hover:text-cyan-400 xs:text-base sm:text-lg"
 							>
 								{engine.id.toUpperCase()}
 							</div>
-							<div class="text-xs text-slate-500 transition-colors group-hover:text-slate-400">
+							<div
+								class="text-[10px] text-slate-500 transition-colors group-hover:text-slate-400 xs:text-xs"
+							>
 								{engine.model}
 							</div>
 						</div>
 
-						<div class="grid grid-cols-2 gap-x-2 gap-y-3 text-sm sm:gap-y-4">
+						<div class="grid grid-cols-2 gap-x-2 gap-y-2 text-xs xs:gap-y-3 sm:gap-y-4 sm:text-sm">
 							<div>
-								<div class="mb-1 text-xs text-slate-500">{$_('engine.load')}</div>
+								<div class="mb-0.5 text-[10px] text-slate-500 xs:mb-1 xs:text-xs">
+									{$_('engine.load')}
+								</div>
 								<div class="font-mono text-white tabular-nums">
 									{engine.power_kw.toFixed(0)}
-									<span class="text-xs text-slate-500">{$_('common.kw')}</span>
+									<span class="text-[10px] text-slate-500 xs:text-xs">{$_('common.kw')}</span>
 								</div>
 							</div>
 							<div>
-								<div class="mb-1 text-xs text-slate-500">{$_('engine.profitability')}</div>
+								<div class="mb-0.5 text-[10px] text-slate-500 xs:mb-1 xs:text-xs">
+									{$_('engine.profitability')}
+								</div>
 								<div
 									class={cn(
 										'font-mono font-medium tabular-nums transition-colors',
@@ -421,11 +457,15 @@
 									{engine.profit_rate > 0 ? '+' : ''}{Math.round(
 										currencyState.convert(engine.profit_rate)
 									)}
-									<span class="text-xs opacity-50">{currencyState.info.symbol}{$_('common.perHour')}</span>
+									<span class="text-[10px] opacity-50 xs:text-xs"
+										>{currencyState.info.symbol}{$_('common.perHour')}</span
+									>
 								</div>
 							</div>
 							<div>
-								<div class="mb-1 text-xs text-slate-500">{$_('engine.temp')}</div>
+								<div class="mb-0.5 text-[10px] text-slate-500 xs:mb-1 xs:text-xs">
+									{$_('engine.temp')}
+								</div>
 								{#if engine.temp > 500}
 									<div class="temp-warning inline-block">
 										<span class="font-mono font-semibold text-rose-400 tabular-nums">
@@ -439,21 +479,24 @@
 								{/if}
 							</div>
 							<div>
-								<div class="mb-1 text-xs text-slate-500">{$_('engine.vibration')}</div>
+								<div class="mb-0.5 text-[10px] text-slate-500 xs:mb-1 xs:text-xs">
+									{$_('engine.vibration')}
+								</div>
 								<div
 									class={cn(
 										'font-mono tabular-nums transition-colors',
 										engine.vibration > 10 ? 'text-amber-400' : 'text-slate-300'
 									)}
 								>
-									{engine.vibration.toFixed(1)} <span class="text-xs opacity-50">{$_('units.mms')}</span>
+									{engine.vibration.toFixed(1)}
+									<span class="text-[10px] opacity-50 xs:text-xs">{$_('units.mms')}</span>
 								</div>
 							</div>
 						</div>
 
 						<!-- Arrow indicator -->
 						<div
-							class="absolute right-4 bottom-4 opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
+							class="absolute right-3 bottom-3 opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100 xs:right-4 xs:bottom-4"
 						>
 							<ArrowUpRight class="h-4 w-4 text-cyan-400" />
 						</div>
@@ -462,60 +505,92 @@
 			</div>
 		</div>
 
-		<!-- Sidebar (Right) - Event Feed -->
+		<!-- Sidebar (Right) - Event Feed - Collapsible on mobile -->
 		<div
-			class="glass-card order-first h-fit rounded-xl p-0 xl:sticky xl:top-24 xl:order-last xl:flex xl:max-h-[calc(100vh-140px)] xl:flex-col xl:overflow-hidden"
+			class="glass-card order-last h-fit overflow-hidden rounded-xl p-0 xl:sticky xl:top-24 xl:flex xl:max-h-[calc(100vh-140px)] xl:flex-col"
 		>
-			<div class="border-b border-white/5 bg-slate-900/50 p-3 backdrop-blur-xl sm:p-4">
+			<!-- Header - Clickable on mobile to expand/collapse -->
+			<button
+				type="button"
+				class="flex w-full items-center justify-between border-b border-white/5 bg-slate-900/50 p-3 text-left backdrop-blur-xl sm:p-4 xl:cursor-default"
+				onclick={() => (eventsExpanded = !eventsExpanded)}
+			>
 				<h3 class="flex items-center gap-2 text-sm font-semibold text-slate-200 sm:text-base">
 					<TriangleAlert size={16} class="text-amber-400" />
 					{$_('dashboard.liveEvents')}
+					{#if criticalEventsCount > 0}
+						<span
+							class="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500/20 px-1.5 text-[10px] font-bold text-rose-400"
+						>
+							{criticalEventsCount}
+						</span>
+					{/if}
 				</h3>
-			</div>
+				<ChevronDown
+					class={cn(
+						'h-5 w-5 text-slate-400 transition-transform xl:hidden',
+						eventsExpanded && 'rotate-180'
+					)}
+				/>
+			</button>
 
-			<div class="max-h-64 space-y-2 overflow-y-auto p-3 sm:p-4 xl:max-h-none xl:flex-1">
-				{#each data.events.slice(0, 10) as event, i (event.id)}
-					<a
-						href="{base}/engine/{event.engine_id}"
-						class="animate-slide-in-right flex gap-2 rounded-lg border border-white/5 bg-white/5 p-2 text-xs opacity-0 transition-all duration-200 hover:border-white/10 hover:bg-white/10 sm:gap-3 sm:p-3 sm:text-sm"
-						style="animation-delay: {i * 30}ms; animation-fill-mode: forwards;"
-					>
-						<div class="mt-0.5 shrink-0">
-							<div
-								class={cn(
-									'h-2 w-2 rounded-full transition-shadow',
-									getEventLevelColor(event.level),
-									event.level === 'error' && 'shadow-md shadow-rose-500/50',
-									event.level === 'warning' && 'shadow-md shadow-amber-500/50'
-								)}
-							></div>
-						</div>
-						<div class="min-w-0 flex-1">
-							<div class="mb-0.5 text-xs text-slate-500 sm:mb-1">
-								{new Date(event.time).toLocaleTimeString()}
-								{#if event.engine_id}
-									<span class="ml-1 font-medium text-cyan-400 sm:ml-2"
-										>{event.engine_id.toUpperCase()}</span
-									>
-								{/if}
+			<!-- Events List -->
+			<div
+				class={cn(
+					'overflow-hidden transition-all duration-300 xl:flex xl:max-h-none xl:flex-1 xl:flex-col',
+					eventsExpanded ? 'max-h-[50vh]' : 'max-h-0 xl:max-h-none'
+				)}
+			>
+				<div class="space-y-2 overflow-y-auto p-3 sm:p-4 xl:flex-1">
+					{#each data.events.slice(0, 10) as event, i (event.id)}
+						<a
+							href="{base}/engine/{event.engine_id}"
+							class="animate-slide-in-right flex gap-2 rounded-lg border border-white/5 bg-white/5 p-2 text-xs opacity-0 transition-all duration-200 hover:border-white/10 hover:bg-white/10 sm:gap-3 sm:p-3 sm:text-sm"
+							style="animation-delay: {i * 30}ms; animation-fill-mode: forwards;"
+						>
+							<div class="mt-0.5 shrink-0">
+								<div
+									class={cn(
+										'h-2 w-2 rounded-full transition-shadow',
+										getEventLevelColor(event.level),
+										event.level === 'error' && 'shadow-md shadow-rose-500/50',
+										event.level === 'warning' && 'shadow-md shadow-amber-500/50'
+									)}
+								></div>
 							</div>
-							<div class="line-clamp-2 leading-snug text-slate-200">
-								{event.message}
+							<div class="min-w-0 flex-1">
+								<div class="mb-0.5 text-[10px] text-slate-500 xs:text-xs sm:mb-1">
+									{new Date(event.time).toLocaleTimeString()}
+									{#if event.engine_id}
+										<span class="ml-1 font-medium text-cyan-400 sm:ml-2"
+											>{event.engine_id.toUpperCase()}</span
+										>
+									{/if}
+								</div>
+								<div
+									class="line-clamp-2 text-[11px] leading-snug text-slate-200 xs:text-xs sm:text-sm"
+								>
+									{event.message}
+								</div>
 							</div>
-						</div>
-					</a>
-				{/each}
+						</a>
+					{/each}
 
-				{#if data.events.length === 0}
-					<div class="py-10 text-center text-sm text-slate-600">{$_('dashboard.noEvents')}</div>
-				{/if}
+					{#if data.events.length === 0}
+						<div class="py-8 text-center text-xs text-slate-600 sm:py-10 sm:text-sm">
+							{$_('dashboard.noEvents')}
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
 {/if}
 
 {#if showErrorToast}
-	<div class="animate-fade-in fixed right-6 bottom-6 z-50 w-full max-w-sm">
+	<div
+		class="animate-fade-in fixed right-3 bottom-3 left-3 z-50 sm:right-6 sm:bottom-6 sm:left-auto sm:w-full sm:max-w-sm"
+	>
 		<Toast
 			variant="error"
 			title={$_('errors.title')}

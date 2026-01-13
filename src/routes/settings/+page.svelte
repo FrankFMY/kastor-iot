@@ -30,21 +30,23 @@
 		</p>
 	</div>
 
-	<div class="grid gap-6">
+	<div class="grid gap-4 sm:gap-6">
 		<!-- Notifications -->
 		<Card>
-			<div class="mb-6 flex items-center gap-3 border-b border-white/5 pb-4">
+			<div class="mb-4 flex items-center gap-3 border-b border-white/5 pb-4 sm:mb-6">
 				<div class="rounded-lg bg-cyan-500/10 p-2 text-cyan-400">
 					<Bell class="h-5 w-5" />
 				</div>
 				<div>
-					<h3 class="font-semibold text-white">{$_('settings.notifications')}</h3>
-					<p class="text-xs text-slate-400">{$_('settings.notificationsDesc')}</p>
+					<h3 class="text-base font-semibold text-white sm:text-lg">
+						{$_('settings.notifications')}
+					</h3>
+					<p class="text-xs text-slate-400 sm:text-sm">{$_('settings.notificationsDesc')}</p>
 				</div>
 			</div>
 
 			<div class="space-y-4">
-				<div class="flex items-center justify-between">
+				<div class="flex items-center justify-between gap-4">
 					<div class="space-y-0.5">
 						<div class="text-sm font-medium text-slate-200">
 							{$_('settings.emailNotifications')}
@@ -113,13 +115,15 @@
 
 		<!-- System -->
 		<Card>
-			<div class="mb-6 flex items-center gap-3 border-b border-white/5 pb-4">
+			<div class="mb-4 flex items-center gap-3 border-b border-white/5 pb-4 sm:mb-6">
 				<div class="rounded-lg bg-cyan-500/10 p-2 text-cyan-400">
 					<Monitor class="h-5 w-5" />
 				</div>
 				<div>
-					<h3 class="font-semibold text-white">{$_('settings.systemConfig')}</h3>
-					<p class="text-xs text-slate-400">{$_('settings.systemConfigDesc')}</p>
+					<h3 class="text-base font-semibold text-white sm:text-lg">
+						{$_('settings.systemConfig')}
+					</h3>
+					<p class="text-xs text-slate-400 sm:text-sm">{$_('settings.systemConfigDesc')}</p>
 				</div>
 			</div>
 

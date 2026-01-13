@@ -1,5 +1,18 @@
 @import 'tailwindcss';
 
+/* ===== CUSTOM TAILWIND THEME EXTENSIONS ===== */
+@theme {
+	/* Extra small breakpoint for tiny phones */
+	--breakpoint-xs: 475px;
+
+	/* Z-index layer system for consistent stacking */
+	--z-index-dropdown: 50;
+	--z-index-sticky: 100;
+	--z-index-overlay: 9998;
+	--z-index-modal: 9999;
+	--z-index-toast: 10000;
+}
+
 :root {
 	--font-sans: 'Inter', system-ui, sans-serif;
 	--transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -9,6 +22,12 @@
 	--glow-rose: 0 0 20px rgba(244, 63, 94, 0.4), 0 0 40px rgba(244, 63, 94, 0.2);
 	--glow-amber: 0 0 20px rgba(245, 158, 11, 0.4), 0 0 40px rgba(245, 158, 11, 0.2);
 	--glow-emerald: 0 0 20px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
+
+	/* Safe area insets for notched devices */
+	--safe-area-top: env(safe-area-inset-top, 0px);
+	--safe-area-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-area-left: env(safe-area-inset-left, 0px);
+	--safe-area-right: env(safe-area-inset-right, 0px);
 }
 
 body {
@@ -231,6 +250,24 @@ body {
 	}
 }
 
+@keyframes slide-in-left {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes slide-out-left {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-100%);
+	}
+}
+
 .animate-fade-in {
 	animation: fade-in-up 0.4s ease-out forwards;
 }
@@ -241,6 +278,14 @@ body {
 
 .animate-slide-in-right {
 	animation: slide-in-right 0.3s ease-out forwards;
+}
+
+.animate-slide-in-left {
+	animation: slide-in-left 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-slide-out-left {
+	animation: slide-out-left 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
 /* Stagger delays for grid items */
@@ -303,6 +348,23 @@ body {
 	@apply bg-cyan-500/60;
 }
 
+/* Better scrollbar for touch devices */
+@media (hover: none) and (pointer: coarse) {
+	::-webkit-scrollbar {
+		width: 4px;
+		height: 4px;
+	}
+
+	::-webkit-scrollbar-thumb {
+		@apply bg-slate-600/50;
+	}
+
+	/* Enable momentum scrolling on iOS */
+	* {
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
 /* ===== CHART CONTAINER ===== */
 .echarts-container {
 	width: 100%;
@@ -319,6 +381,57 @@ body {
 	.glass-card::before {
 		display: none;
 	}
+
+	/* Disable hover lift effect on mobile - it causes issues with touch */
+	.card-hover-lift:hover {
+		transform: none;
+	}
+
+	.card-hover-lift:active {
+		transform: scale(0.98);
+	}
+}
+
+/* ===== SAFE AREA UTILITIES ===== */
+.safe-top {
+	padding-top: var(--safe-area-top);
+}
+
+.safe-bottom {
+	padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-left {
+	padding-left: var(--safe-area-left);
+}
+
+.safe-right {
+	padding-right: var(--safe-area-right);
+}
+
+.safe-x {
+	padding-left: var(--safe-area-left);
+	padding-right: var(--safe-area-right);
+}
+
+.safe-y {
+	padding-top: var(--safe-area-top);
+	padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-all {
+	padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+}
+
+/* ===== VIEWPORT HEIGHT FIX FOR MOBILE ===== */
+.h-screen-safe {
+	height: 100vh;
+	height: 100dvh;
+}
+
+.min-h-screen-safe {
+	min-height: 100vh;
+	min-height: 100dvh;
 }
 
 /* ===== MOBILE MENU OVERLAY ===== */
@@ -387,7 +500,7 @@ textarea:focus-visible {
 }
 
 /* ===== TOUCH FEEDBACK FOR MOBILE ===== */
-@media (hover: none) {
+@media (hover: none) and (pointer: coarse) {
 	.glass-card:active {
 		transform: scale(0.98);
 		opacity: 0.9;
@@ -395,8 +508,32 @@ textarea:focus-visible {
 
 	button:active,
 	a:active {
-		transform: scale(0.96);
+		transform: scale(0.97);
 	}
+
+	/* Disable text selection on interactive elements for better touch UX */
+	button,
+	a,
+	[role='button'] {
+		-webkit-user-select: none;
+		user-select: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	/* Ensure minimum touch target size (44px recommended by Apple) */
+	.touch-target {
+		min-height: 44px;
+		min-width: 44px;
+	}
+}
+
+/* ===== PREVENT PULL-TO-REFRESH ON SCROLLABLE AREAS ===== */
+.overscroll-none {
+	overscroll-behavior: none;
+}
+
+.overscroll-contain {
+	overscroll-behavior: contain;
 }
 
 /* ===== PROGRESS BAR ANIMATION ===== */

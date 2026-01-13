@@ -1,6 +1,12 @@
 # syntax=docker/dockerfile:1
 
-# Build stage
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║                    KASTOR IoT - Production Dockerfile                     ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+# ═══════════════════════════════════════════════════════════════
+# BUILD STAGE
+# ═══════════════════════════════════════════════════════════════
 FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
@@ -12,23 +18,32 @@ RUN bun install --frozen-lockfile
 # Copy source files
 COPY . .
 
+# Set production environment for build
+ENV NODE_ENV=production
+
 # Build the application
 RUN bun run build
 
-# Production stage
+# ═══════════════════════════════════════════════════════════════
+# PRODUCTION STAGE
+# ═══════════════════════════════════════════════════════════════
 FROM oven/bun:1-alpine AS runner
 
 WORKDIR /app
 
 # Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 sveltekit
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 sveltekit
 
 # Copy built application
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/bun.lock ./
+
+# Copy scripts and migrations for seed/migrate commands
+COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/src/lib/server ./src/lib/server
 
 # Install production dependencies only
 RUN bun install --frozen-lockfile --production
@@ -48,7 +63,7 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 # Start the application

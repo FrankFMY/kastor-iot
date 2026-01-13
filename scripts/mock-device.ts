@@ -1,6 +1,15 @@
 import mqtt from 'mqtt';
 
-const client = mqtt.connect('mqtt://localhost:1883');
+// Настройки подключения из переменных окружения
+const MQTT_URL = process.env.MQTT_URL || 'mqtt://localhost:1883';
+const MQTT_USERNAME = process.env.MQTT_USERNAME || '';
+const MQTT_PASSWORD = process.env.MQTT_PASSWORD || '';
+
+const client = mqtt.connect(MQTT_URL, {
+	username: MQTT_USERNAME || undefined,
+	password: MQTT_PASSWORD || undefined,
+	reconnectPeriod: 5000
+});
 
 const engines = [
 	{ id: 'gpu-1', model: 'Weichai 16VCN' },
@@ -16,10 +25,18 @@ let cycleTime = 0;
 const SCENARIO_CYCLE = 120; // 2 minutes cycle
 
 client.on('connect', () => {
-	console.log('Connected to MQTT Broker');
+	console.log(`✅ Connected to MQTT Broker: ${MQTT_URL}`);
 
 	// Publish every second
 	setInterval(simulate, 1000);
+});
+
+client.on('error', (err) => {
+	console.error('❌ MQTT Error:', err.message);
+});
+
+client.on('reconnect', () => {
+	console.log('🔄 Reconnecting to MQTT...');
 });
 
 function simulate() {

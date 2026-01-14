@@ -44,10 +44,12 @@ COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/bun.lock ./
 
-# Copy scripts and migrations for seed/migrate commands
+# Copy scripts, migrations, and configs for seed/migrate commands
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/server ./src/lib/server
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 # Install production dependencies only
 RUN bun install --frozen-lockfile --production

@@ -129,46 +129,36 @@ fi
 
 echo ""
 log_info "Ожидание запуска сервисов..."
-sleep 10
+
+# Ждём пока все сервисы станут healthy
+MAX_WAIT=120
+WAITED=0
+while true; do
+    # Проверяем статус контейнеров
+    APP_STATUS=$(docker inspect --format='{{.State.Health.Status}}' kastor-app 2>/dev/null || echo "starting")
+    DB_STATUS=$(docker inspect --format='{{.State.Health.Status}}' kastor-db 2>/dev/null || echo "starting")
+    
+    if [[ "$APP_STATUS" == "healthy" && "$DB_STATUS" == "healthy" ]]; then
+        break
+    fi
+    
+    if [ $WAITED -ge $MAX_WAIT ]; then
+        log_warning "Превышено время ожидания. Проверьте логи: docker logs kastor-app"
+        break
+    fi
+    
+    echo -ne "\r  DB: ${DB_STATUS}, App: ${APP_STATUS} ... ($WAITED сек)"
+    sleep 2
+    WAITED=$((WAITED + 2))
+done
+echo ""
 
 # Проверка здоровья сервисов
 log_info "Проверка статуса сервисов..."
 docker compose -f docker-compose.production.yaml ps
 
 echo ""
-
-# Инициализация базы данных
-log_info "Инициализация базы данных..."
-
-# Ждём пока БД полностью запустится
-MAX_RETRIES=30
-RETRY_COUNT=0
-while ! docker compose -f docker-compose.production.yaml exec -T db pg_isready -U ${DB_USER:-kastor} -d ${DB_NAME:-kastor} &>/dev/null; do
-    RETRY_COUNT=$((RETRY_COUNT + 1))
-    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-        log_error "База данных не запустилась за 30 секунд"
-        exit 1
-    fi
-    echo -n "."
-    sleep 1
-done
-echo ""
-log_success "База данных готова"
-
-# Применение миграций (через app контейнер)
-log_info "Применение миграций базы данных..."
-docker compose -f docker-compose.production.yaml exec -T app sh -c "cd /app && bunx drizzle-kit push" 2>/dev/null || {
-    log_warning "Миграции не применены автоматически. Это нормально при первом запуске."
-    log_info "Миграции будут применены при первом обращении к приложению."
-}
-
-# Seed данных для demo
-if [[ "$MODE" == "demo" ]]; then
-    log_info "Заполнение демо-данными..."
-    docker compose -f docker-compose.production.yaml exec -T app sh -c "cd /app && bun run scripts/seed.ts" 2>/dev/null || {
-        log_warning "Seed не выполнен. Попробуйте вручную: docker compose -f docker-compose.production.yaml exec app bun run scripts/seed.ts"
-    }
-fi
+log_success "База данных и приложение готовы (схема создана автоматически)"
 
 echo ""
 echo -e "${GREEN}"

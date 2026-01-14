@@ -1,15 +1,16 @@
 # KASTOR IoT - Production Docker Compose (HOST NETWORKING MODE)
-# Упрощённая версия для VPS с проблемным Docker networking
+# Оптимизированная версия для VPS (TimeWeb, Beget, DigitalOcean, etc.)
 #
-# Использование:
-#   docker compose -f docker-compose.production.yaml up -d
+# Быстрый старт:
+#   ./scripts/deploy.sh demo
 #
-# Или через скрипт:
-#   ./scripts/deploy.sh
+# Или вручную:
+#   docker compose -f docker-compose.production.yaml --profile demo up -d
 
 services:
   # ═══════════════════════════════════════════════════════════════
   # DATABASE - TimescaleDB (PostgreSQL с расширениями для time-series)
+  # База данных автоматически инициализируется при первом запуске
   # ═══════════════════════════════════════════════════════════════
   db:
     image: timescale/timescaledb:latest-pg17
@@ -22,6 +23,8 @@ services:
       POSTGRES_DB: ${DB_NAME:-kastor}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Автоматическая инициализация БД при первом запуске
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test:
         ["CMD-SHELL", "pg_isready -U ${DB_USER:-kastor} -d ${DB_NAME:-kastor}"]

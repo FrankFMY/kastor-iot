@@ -26,8 +26,7 @@ services:
       # Автоматическая инициализация БД при первом запуске
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test:
-        ["CMD-SHELL", "pg_isready -U ${DB_USER:-kastor} -d ${DB_NAME:-kastor}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-kastor} -d ${DB_NAME:-kastor}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,16 +40,16 @@ services:
     restart: always
     network_mode: host
     environment:
-      EMQX_ALLOW_ANONYMOUS: "true"
-      EMQX_LISTENERS__TCP__DEFAULT__BIND: "0.0.0.0:1883"
-      EMQX_LISTENERS__WS__DEFAULT__BIND: "0.0.0.0:8083"
-      EMQX_DASHBOARD__LISTENERS__HTTP__BIND: "0.0.0.0:18083"
-      EMQX_DASHBOARD__DEFAULT_USERNAME: "admin"
-      EMQX_DASHBOARD__DEFAULT_PASSWORD: "${MQTT_ADMIN_PASSWORD:-kastor_mqtt_2026}"
+      EMQX_ALLOW_ANONYMOUS: 'true'
+      EMQX_LISTENERS__TCP__DEFAULT__BIND: '0.0.0.0:1883'
+      EMQX_LISTENERS__WS__DEFAULT__BIND: '0.0.0.0:8083'
+      EMQX_DASHBOARD__LISTENERS__HTTP__BIND: '0.0.0.0:18083'
+      EMQX_DASHBOARD__DEFAULT_USERNAME: 'admin'
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: '${MQTT_ADMIN_PASSWORD:-kastor_mqtt_2026}'
     volumes:
       - emqxdata:/opt/emqx/data
     healthcheck:
-      test: ["CMD", "emqx", "ping"]
+      test: ['CMD', 'emqx', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -81,14 +80,7 @@ services:
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:3000}
     healthcheck:
       test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://127.0.0.1:3000/api/health",
-        ]
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/api/health']
       interval: 30s
       timeout: 10s
       start_period: 60s

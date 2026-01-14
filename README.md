@@ -52,10 +52,9 @@ docker compose -f docker-compose.production.yaml --profile demo up -d --build
 
 ---
 
-## 🖥️ Развертывание на VPS (Beget, DigitalOcean, etc.)
+## 🖥️ Развертывание на VPS (TimeWeb, Beget, DigitalOcean, etc.)
 
-Самая простая инструкция (copy‑paste):
-- `DEPLOY_BEGET_VPS.md`
+Подробная инструкция: [DEPLOY_VPS.md](DEPLOY_VPS.md)
 
 ### Шаг 1: Подготовка сервера
 

@@ -32,30 +32,23 @@ services:
       - kastor-network
 
   # ═══════════════════════════════════════════════════════════════
-  # CACHE - Redis для кэширования и сессий
+  # CACHE - Redis (отключен для демо, используется in-memory fallback)
   # ═══════════════════════════════════════════════════════════════
-  redis:
-    image: redis:7-alpine
-    restart: always
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    command: redis-server --requirepass ${REDIS_PASSWORD:-kastor_redis_2026}
-    volumes:
-      - redisdata:/data
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "redis-cli",
-          "-a",
-          "${REDIS_PASSWORD:-kastor_redis_2026}",
-          "ping",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - kastor-network
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: always
+  #   ports:
+  #     - "${REDIS_PORT:-6379}:6379"
+  #   command: redis-server --requirepass ${REDIS_PASSWORD:-kastor_redis_2026}
+  #   volumes:
+  #     - redisdata:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-kastor_redis_2026}", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - kastor-network
 
   # ═══════════════════════════════════════════════════════════════
   # MQTT BROKER - EMQX для IoT телеметрии
@@ -104,8 +97,8 @@ services:
       HOST: 0.0.0.0
       # Database
       DATABASE_URL: postgres://${DB_USER:-kastor}:${DB_PASSWORD:-kastor_secure_password_2026}@db:5432/${DB_NAME:-kastor}
-      # Redis
-      REDIS_URL: redis://:${REDIS_PASSWORD:-kastor_redis_2026}@redis:6379
+      # Redis (отключен - используется in-memory fallback)
+      # REDIS_URL: redis://:${REDIS_PASSWORD:-kastor_redis_2026}@redis:6379
       # MQTT
       MQTT_URL: mqtt://emqx:1883
       MQTT_USERNAME: ${MQTT_USERNAME:-kastor_app}
@@ -116,8 +109,6 @@ services:
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:3000}
     depends_on:
       db:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       emqx:
         condition: service_healthy
@@ -181,8 +172,6 @@ services:
 
 volumes:
   pgdata:
-    driver: local
-  redisdata:
     driver: local
   emqxdata:
     driver: local

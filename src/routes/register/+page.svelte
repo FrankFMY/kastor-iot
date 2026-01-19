@@ -7,6 +7,7 @@
 	import Lock from 'lucide-svelte/icons/lock';
 	import User from 'lucide-svelte/icons/user';
 	import AlertCircle from 'lucide-svelte/icons/alert-circle';
+	import { _, isLoading } from 'svelte-i18n';
 
 	let name = $state('');
 	let email = $state('');
@@ -21,13 +22,13 @@
 		error = null;
 
 		if (password !== confirmPassword) {
-			error = 'Passwords do not match';
+			error = $isLoading ? 'Пароли не совпадают' : $_('register.errors.passwordMismatch');
 			loading = false;
 			return;
 		}
 
 		if (password.length < 8) {
-			error = 'Password must be at least 8 characters';
+			error = $isLoading ? 'Минимум 8 символов' : $_('register.errors.passwordLength');
 			loading = false;
 			return;
 		}
@@ -54,7 +55,7 @@
 </script>
 
 <svelte:head>
-	<title>Register - KASTOR IoT</title>
+	<title>{$isLoading ? 'Регистрация' : $_('register.pageTitle')} - KASTOR IoT</title>
 </svelte:head>
 
 <div class="flex min-h-screen items-center justify-center bg-slate-950 px-4">
@@ -69,14 +70,20 @@
 			<h1 class="text-3xl font-bold text-white">
 				KASTOR <span class="font-normal text-slate-500">IoT</span>
 			</h1>
-			<p class="mt-2 text-sm text-slate-400">Industrial IoT Monitoring Platform</p>
+			<p class="mt-2 text-sm text-slate-400">
+				{#if !$isLoading}{$_('login.subtitle')}{:else}Платформа IoT-мониторинга{/if}
+			</p>
 		</div>
 
 		<Card>
 			<form onsubmit={handleSubmit} class="space-y-6">
 				<div>
-					<h2 class="text-xl font-semibold text-white">Create your account</h2>
-					<p class="mt-1 text-sm text-slate-400">Register to access the monitoring dashboard</p>
+					<h2 class="text-xl font-semibold text-white">
+						{#if !$isLoading}{$_('register.title')}{:else}Создание аккаунта{/if}
+					</h2>
+					<p class="mt-1 text-sm text-slate-400">
+						{#if !$isLoading}{$_('register.description')}{:else}Зарегистрируйтесь для доступа{/if}
+					</p>
 				</div>
 
 				{#if error}
@@ -91,7 +98,7 @@
 				<div class="space-y-4">
 					<div>
 						<label for="name" class="mb-1.5 block text-sm font-medium text-slate-300">
-							Full name
+							{#if !$isLoading}{$_('register.fullName')}{:else}Полное имя{/if}
 						</label>
 						<div class="relative">
 							<User class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -101,7 +108,7 @@
 								bind:value={name}
 								required
 								autocomplete="name"
-								placeholder="John Doe"
+								placeholder={$isLoading ? 'Иван Петров' : $_('register.namePlaceholder')}
 								class="w-full rounded-lg border border-slate-700 bg-slate-800 py-2.5 pr-3 pl-10 text-white placeholder-slate-500 transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none"
 							/>
 						</div>
@@ -109,7 +116,7 @@
 
 					<div>
 						<label for="email" class="mb-1.5 block text-sm font-medium text-slate-300">
-							Email address
+							{#if !$isLoading}{$_('login.email')}{:else}Email адрес{/if}
 						</label>
 						<div class="relative">
 							<Mail class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -127,7 +134,7 @@
 
 					<div>
 						<label for="password" class="mb-1.5 block text-sm font-medium text-slate-300">
-							Password
+							{#if !$isLoading}{$_('login.password')}{:else}Пароль{/if}
 						</label>
 						<div class="relative">
 							<Lock class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -142,12 +149,14 @@
 								class="w-full rounded-lg border border-slate-700 bg-slate-800 py-2.5 pr-3 pl-10 text-white placeholder-slate-500 transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none"
 							/>
 						</div>
-						<p class="mt-1 text-xs text-slate-500">Must be at least 8 characters</p>
+						<p class="mt-1 text-xs text-slate-500">
+							{#if !$isLoading}{$_('register.passwordHint')}{:else}Минимум 8 символов{/if}
+						</p>
 					</div>
 
 					<div>
 						<label for="confirm-password" class="mb-1.5 block text-sm font-medium text-slate-300">
-							Confirm password
+							{#if !$isLoading}{$_('register.confirmPassword')}{:else}Подтвердите пароль{/if}
 						</label>
 						<div class="relative">
 							<Lock class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -165,18 +174,23 @@
 				</div>
 
 				<Button type="submit" class="w-full" disabled={loading} {loading}>
-					{loading ? 'Creating account...' : 'Create account'}
+					{#if loading}
+						{#if !$isLoading}{$_('register.creating')}{:else}Создание...{/if}
+					{:else if !$isLoading}{$_('register.createAccount')}{:else}Создать аккаунт{/if}
 				</Button>
 
 				<p class="text-center text-sm text-slate-400">
-					Already have an account?
-					<a href="/login" class="text-cyan-400 hover:underline">Sign in</a>
+					{#if !$isLoading}{$_('register.haveAccount')}{:else}Уже есть аккаунт?{/if}
+					<a href="/login" class="text-cyan-400 hover:underline">
+						{#if !$isLoading}{$_('login.signIn')}{:else}Войти{/if}
+					</a>
 				</p>
 			</form>
 		</Card>
 
 		<p class="mt-6 text-center text-xs text-slate-600">
-			By registering, you agree to our terms of service
+			{#if !$isLoading}{$_('register.terms')}{:else}Регистрируясь, вы соглашаетесь с условиями
+				использования{/if}
 		</p>
 	</div>
 </div>

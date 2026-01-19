@@ -18,6 +18,7 @@
 	import Calendar from 'lucide-svelte/icons/calendar';
 	import GitCompare from 'lucide-svelte/icons/git-compare';
 	import Cable from 'lucide-svelte/icons/cable';
+	import LayoutGrid from 'lucide-svelte/icons/layout-grid';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import CurrencySwitcher from './CurrencySwitcher.svelte';
 
@@ -44,6 +45,7 @@
 			title: 'nav.analyticsGroup',
 			items: [
 				{ href: `${base}/analytics`, label: 'nav.analytics', icon: BarChart3 },
+				{ href: `${base}/dashboards`, label: 'nav.dashboards', icon: LayoutGrid },
 				{ href: `${base}/comparison`, label: 'nav.comparison', icon: GitCompare },
 				{ href: `${base}/economics`, label: 'nav.economics', icon: DollarSign },
 				{ href: `${base}/reports`, label: 'nav.reports', icon: FileText }

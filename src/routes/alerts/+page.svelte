@@ -267,7 +267,8 @@
 				<div>
 					<label
 						for="mobile-severity-filter"
-						class="mb-1.5 block text-xs font-medium text-slate-500">{$_('alerts.severity')}</label
+						class="mb-1.5 block text-xs font-medium text-slate-500"
+						>{$_('alerts.severityLabel')}</label
 					>
 					<select
 						id="mobile-severity-filter"

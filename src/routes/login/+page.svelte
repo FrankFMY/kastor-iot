@@ -6,6 +6,7 @@
 	import Mail from 'lucide-svelte/icons/mail';
 	import Lock from 'lucide-svelte/icons/lock';
 	import AlertCircle from 'lucide-svelte/icons/alert-circle';
+	import { _, isLoading } from 'svelte-i18n';
 
 	let email = $state('');
 	let password = $state('');
@@ -51,7 +52,7 @@
 </script>
 
 <svelte:head>
-	<title>Login - KASTOR IoT</title>
+	<title>{$isLoading ? 'Login' : $_('login.pageTitle')} - KASTOR IoT</title>
 </svelte:head>
 
 <div class="flex min-h-screen items-center justify-center bg-slate-950 px-4">
@@ -66,14 +67,20 @@
 			<h1 class="text-3xl font-bold text-white">
 				KASTOR <span class="font-normal text-slate-500">IoT</span>
 			</h1>
-			<p class="mt-2 text-sm text-slate-400">Industrial IoT Monitoring Platform</p>
+			<p class="mt-2 text-sm text-slate-400">
+				{#if !$isLoading}{$_('login.subtitle')}{:else}Платформа IoT-мониторинга{/if}
+			</p>
 		</div>
 
 		<Card>
 			<form onsubmit={handleSubmit} class="space-y-6">
 				<div>
-					<h2 class="text-xl font-semibold text-white">Sign in to your account</h2>
-					<p class="mt-1 text-sm text-slate-400">Enter your credentials to access the dashboard</p>
+					<h2 class="text-xl font-semibold text-white">
+						{#if !$isLoading}{$_('login.title')}{:else}Вход в систему{/if}
+					</h2>
+					<p class="mt-1 text-sm text-slate-400">
+						{#if !$isLoading}{$_('login.description')}{:else}Введите данные для доступа{/if}
+					</p>
 				</div>
 
 				{#if error}
@@ -88,7 +95,7 @@
 				<div class="space-y-4">
 					<div>
 						<label for="email" class="mb-1.5 block text-sm font-medium text-slate-300">
-							Email address
+							{#if !$isLoading}{$_('login.email')}{:else}Email{/if}
 						</label>
 						<div class="relative">
 							<Mail class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -98,7 +105,7 @@
 								bind:value={email}
 								required
 								autocomplete="username"
-								placeholder="operator@kastor.io or admin"
+								placeholder="admin@kastor.io"
 								class="w-full rounded-lg border border-slate-700 bg-slate-800 py-2.5 pr-3 pl-10 text-white placeholder-slate-500 transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none"
 							/>
 						</div>
@@ -106,7 +113,7 @@
 
 					<div>
 						<label for="password" class="mb-1.5 block text-sm font-medium text-slate-300">
-							Password
+							{#if !$isLoading}{$_('login.password')}{:else}Пароль{/if}
 						</label>
 						<div class="relative">
 							<Lock class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -129,24 +136,32 @@
 							type="checkbox"
 							class="rounded border-slate-600 bg-slate-800 text-cyan-500 focus:ring-cyan-500/20"
 						/>
-						Remember me
+						{#if !$isLoading}{$_('login.rememberMe')}{:else}Запомнить меня{/if}
 					</label>
-					<span class="cursor-not-allowed text-slate-500" title="Contact administrator"
-						>Forgot password?</span
-					>
+					<span class="cursor-not-allowed text-slate-500" title="{$isLoading ? 'Свяжитесь с администратором' : $_('login.contactAdmin')}">
+						{#if !$isLoading}{$_('login.forgotPassword')}{:else}Забыли пароль?{/if}
+					</span>
 				</div>
 
 				<Button type="submit" class="w-full" disabled={loading} {loading}>
-					{loading ? 'Signing in...' : 'Sign in'}
+					{#if loading}
+						{#if !$isLoading}{$_('login.signingIn')}{:else}Вход...{/if}
+					{:else}
+						{#if !$isLoading}{$_('login.signIn')}{:else}Войти{/if}
+					{/if}
 				</Button>
 
 				<p class="text-center text-sm text-slate-400">
-					Don't have an account?
-					<a href="/register" class="text-cyan-400 hover:underline">Create one</a>
+					{#if !$isLoading}{$_('login.noAccount')}{:else}Нет аккаунта?{/if}
+					<a href="/register" class="text-cyan-400 hover:underline">
+						{#if !$isLoading}{$_('login.createOne')}{:else}Создать{/if}
+					</a>
 				</p>
 			</form>
 		</Card>
 
-		<p class="mt-6 text-center text-xs text-slate-600">Protected by rate limiting and encryption</p>
+		<p class="mt-6 text-center text-xs text-slate-600">
+			{#if !$isLoading}{$_('login.protected')}{:else}Защищено шифрованием{/if}
+		</p>
 	</div>
 </div>

@@ -12,6 +12,7 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import { getAlertRules, toggleAlertRule, createAlertRule } from '$lib/services/alerts.service.js';
 	import type { AlertRule, AlertSeverity } from '$lib/types/alert.js';
+	import { _, isLoading } from 'svelte-i18n';
 
 	let rules: AlertRule[] = $state([]);
 	let loading = $state(true);
@@ -100,21 +101,10 @@
 		}
 	}
 
-	function getMetricLabel(metric: string) {
-		switch (metric) {
-			case 'temp_exhaust':
-				return 'Exhaust Temperature';
-			case 'vibration':
-				return 'Vibration';
-			case 'power_kw':
-				return 'Power Output';
-			case 'gas_pressure':
-				return 'Gas Pressure';
-			case 'total_hours':
-				return 'Operating Hours';
-			default:
-				return metric;
-		}
+	function getMetricLabel(metric: string): string {
+		if ($isLoading) return metric;
+		const key = `alertRules.metrics.${metric}`;
+		return $_(key);
 	}
 
 	function getSeverityColor(severity: string) {
@@ -141,9 +131,11 @@
 		<div>
 			<h1 class="flex items-center gap-3 text-2xl font-bold text-white">
 				<Settings class="h-7 w-7 text-cyan-400" />
-				Alert Rules
+				{#if !$isLoading}{$_('alertRules.title')}{:else}Правила алертов{/if}
 			</h1>
-			<p class="mt-1 text-sm text-slate-400">Configure alert thresholds and notifications</p>
+			<p class="mt-1 text-sm text-slate-400">
+				{#if !$isLoading}{$_('alertRules.subtitle')}{:else}Настройка порогов и уведомлений{/if}
+			</p>
 		</div>
 	</div>
 
@@ -151,7 +143,7 @@
 	<div class="flex justify-end">
 		<Button class="gap-2" onclick={() => (showCreateModal = true)}>
 			<Plus class="h-4 w-4" />
-			Add Rule
+			{#if !$isLoading}{$_('alertRules.addRule')}{:else}Добавить правило{/if}
 		</Button>
 	</div>
 
@@ -176,7 +168,9 @@
 								{#if rule.engine_id}
 									<Badge variant="default">{rule.engine_id.toUpperCase()}</Badge>
 								{:else}
-									<Badge variant="secondary">All Engines</Badge>
+									<Badge variant="secondary">
+										{#if !$isLoading}{$_('alertRules.allEngines')}{:else}Все двигатели{/if}
+									</Badge>
 								{/if}
 							</div>
 
@@ -195,7 +189,7 @@
 									)}
 								>
 									<Mail class="h-3.5 w-3.5" />
-									Email
+									{#if !$isLoading}{$_('alertRules.channels.email')}{:else}Email{/if}
 								</div>
 								<div
 									class={cn(
@@ -204,7 +198,7 @@
 									)}
 								>
 									<Smartphone class="h-3.5 w-3.5" />
-									SMS
+									{#if !$isLoading}{$_('alertRules.channels.sms')}{:else}SMS{/if}
 								</div>
 								<div
 									class={cn(
@@ -213,7 +207,7 @@
 									)}
 								>
 									<BellRing class="h-3.5 w-3.5" />
-									Push
+									{#if !$isLoading}{$_('alertRules.channels.push')}{:else}Push{/if}
 								</div>
 							</div>
 						</div>
@@ -245,11 +239,12 @@
 		<div class="flex gap-4">
 			<Bell class="h-5 w-5 shrink-0 text-cyan-400" />
 			<div class="text-sm text-slate-300">
-				<p class="mb-2 font-medium">How Alert Rules Work</p>
+				<p class="mb-2 font-medium">
+					{#if !$isLoading}{$_('alertRules.howItWorks')}{:else}Как работают правила{/if}
+				</p>
 				<p class="text-slate-400">
-					When a metric crosses the defined threshold for the specified duration, an alert is
-					triggered. Notifications are sent based on the configured channels. Critical alerts always
-					trigger immediate notifications.
+					{#if !$isLoading}{$_('alertRules.howItWorksDesc')}{:else}Когда метрика превышает
+						установленный порог в течение указанного времени, срабатывает алерт.{/if}
 				</p>
 			</div>
 		</div>
@@ -259,7 +254,7 @@
 <!-- Create Alert Rule Modal -->
 <Modal
 	open={showCreateModal}
-	title="Create Alert Rule"
+	title={$isLoading ? 'Создать правило' : $_('alertRules.createRule')}
 	onclose={() => (showCreateModal = false)}
 	size="lg"
 >
@@ -271,14 +266,16 @@
 		class="space-y-4"
 	>
 		<div>
-			<label for="rule-name" class="mb-1 block text-sm font-medium text-slate-300"
-				>Rule Name *</label
-			>
+			<label for="rule-name" class="mb-1 block text-sm font-medium text-slate-300">
+				{#if !$isLoading}{$_('alertRules.form.name')}{:else}Название *{/if}
+			</label>
 			<input
 				id="rule-name"
 				type="text"
 				bind:value={newRule.name}
-				placeholder="e.g., High Temperature Alert"
+				placeholder={$isLoading
+					? 'Например: Высокая температура'
+					: $_('alertRules.form.namePlaceholder')}
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 				required
 			/>
@@ -286,14 +283,17 @@
 
 		<div class="grid grid-cols-2 gap-4">
 			<div>
-				<label for="rule-engine" class="mb-1 block text-sm font-medium text-slate-300">Engine</label
-				>
+				<label for="rule-engine" class="mb-1 block text-sm font-medium text-slate-300">
+					{#if !$isLoading}{$_('alertRules.form.engine')}{:else}Двигатель{/if}
+				</label>
 				<select
 					id="rule-engine"
 					bind:value={newRule.engine_id}
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 				>
-					<option value="">All Engines</option>
+					<option value=""
+						>{#if !$isLoading}{$_('alertRules.allEngines')}{:else}Все двигатели{/if}</option
+					>
 					<option value="gpu-1">GPU-1</option>
 					<option value="gpu-2">GPU-2</option>
 					<option value="gpu-3">GPU-3</option>
@@ -302,47 +302,67 @@
 			</div>
 
 			<div>
-				<label for="rule-metric" class="mb-1 block text-sm font-medium text-slate-300"
-					>Metric *</label
-				>
+				<label for="rule-metric" class="mb-1 block text-sm font-medium text-slate-300">
+					{#if !$isLoading}{$_('alertRules.form.metric')}{:else}Метрика *{/if}
+				</label>
 				<select
 					id="rule-metric"
 					bind:value={newRule.metric}
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 					required
 				>
-					<option value="temp_exhaust">Exhaust Temperature</option>
-					<option value="vibration">Vibration</option>
-					<option value="power_kw">Power Output</option>
-					<option value="gas_pressure">Gas Pressure</option>
-					<option value="total_hours">Operating Hours</option>
+					<option value="temp_exhaust"
+						>{#if !$isLoading}{$_('alertRules.metrics.temp_exhaust')}{:else}Температура выхлопа{/if}</option
+					>
+					<option value="vibration"
+						>{#if !$isLoading}{$_('alertRules.metrics.vibration')}{:else}Вибрация{/if}</option
+					>
+					<option value="power_kw"
+						>{#if !$isLoading}{$_('alertRules.metrics.power_kw')}{:else}Мощность{/if}</option
+					>
+					<option value="gas_pressure"
+						>{#if !$isLoading}{$_('alertRules.metrics.gas_pressure')}{:else}Давление газа{/if}</option
+					>
+					<option value="total_hours"
+						>{#if !$isLoading}{$_('alertRules.metrics.total_hours')}{:else}Моточасы{/if}</option
+					>
 				</select>
 			</div>
 		</div>
 
 		<div class="grid grid-cols-3 gap-4">
 			<div>
-				<label for="rule-operator" class="mb-1 block text-sm font-medium text-slate-300"
-					>Condition *</label
-				>
+				<label for="rule-operator" class="mb-1 block text-sm font-medium text-slate-300">
+					{#if !$isLoading}{$_('alertRules.form.condition')}{:else}Условие *{/if}
+				</label>
 				<select
 					id="rule-operator"
 					bind:value={newRule.operator}
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 					required
 				>
-					<option value="gt">Greater than (&gt;)</option>
-					<option value="gte">Greater or equal (≥)</option>
-					<option value="lt">Less than (&lt;)</option>
-					<option value="lte">Less or equal (≤)</option>
-					<option value="eq">Equal (=)</option>
+					<option value="gt"
+						>{#if !$isLoading}{$_('alertRules.operators.gt')}{:else}Больше (&gt;){/if}</option
+					>
+					<option value="gte"
+						>{#if !$isLoading}{$_('alertRules.operators.gte')}{:else}Больше или равно (≥){/if}</option
+					>
+					<option value="lt"
+						>{#if !$isLoading}{$_('alertRules.operators.lt')}{:else}Меньше (&lt;){/if}</option
+					>
+					<option value="lte"
+						>{#if !$isLoading}{$_('alertRules.operators.lte')}{:else}Меньше или равно (≤){/if}</option
+					>
+					<option value="eq"
+						>{#if !$isLoading}{$_('alertRules.operators.eq')}{:else}Равно (=){/if}</option
+					>
 				</select>
 			</div>
 
 			<div>
-				<label for="rule-threshold" class="mb-1 block text-sm font-medium text-slate-300"
-					>Threshold *</label
-				>
+				<label for="rule-threshold" class="mb-1 block text-sm font-medium text-slate-300">
+					{#if !$isLoading}{$_('alertRules.form.threshold')}{:else}Порог *{/if}
+				</label>
 				<input
 					id="rule-threshold"
 					type="number"
@@ -355,9 +375,9 @@
 			</div>
 
 			<div>
-				<label for="rule-duration" class="mb-1 block text-sm font-medium text-slate-300"
-					>Duration (sec) *</label
-				>
+				<label for="rule-duration" class="mb-1 block text-sm font-medium text-slate-300">
+					{#if !$isLoading}{$_('alertRules.form.duration')}{:else}Длительность (сек) *{/if}
+				</label>
 				<input
 					id="rule-duration"
 					type="number"
@@ -371,23 +391,31 @@
 		</div>
 
 		<div>
-			<label for="rule-severity" class="mb-1 block text-sm font-medium text-slate-300"
-				>Severity *</label
-			>
+			<label for="rule-severity" class="mb-1 block text-sm font-medium text-slate-300">
+				{#if !$isLoading}{$_('alerts.severityLabel')}{:else}Критичность *{/if}
+			</label>
 			<select
 				id="rule-severity"
 				bind:value={newRule.severity}
 				class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
 				required
 			>
-				<option value="info">Info</option>
-				<option value="warning">Warning</option>
-				<option value="critical">Critical</option>
+				<option value="info"
+					>{#if !$isLoading}{$_('alerts.severity.info')}{:else}Информация{/if}</option
+				>
+				<option value="warning"
+					>{#if !$isLoading}{$_('alerts.severity.warning')}{:else}Предупреждение{/if}</option
+				>
+				<option value="critical"
+					>{#if !$isLoading}{$_('alerts.severity.critical')}{:else}Критический{/if}</option
+				>
 			</select>
 		</div>
 
 		<fieldset>
-			<legend class="mb-2 block text-sm font-medium text-slate-300">Notification Channels</legend>
+			<legend class="mb-2 block text-sm font-medium text-slate-300">
+				{#if !$isLoading}{$_('alertRules.notificationChannels')}{:else}Каналы уведомлений{/if}
+			</legend>
 			<div class="flex flex-wrap gap-4">
 				<label class="flex cursor-pointer items-center gap-2">
 					<input
@@ -396,7 +424,9 @@
 						class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-cyan-500 focus:ring-cyan-500"
 					/>
 					<Mail class="h-4 w-4 text-slate-400" />
-					<span class="text-sm text-slate-300">Email</span>
+					<span class="text-sm text-slate-300"
+						>{#if !$isLoading}{$_('alertRules.channels.email')}{:else}Email{/if}</span
+					>
 				</label>
 				<label class="flex cursor-pointer items-center gap-2">
 					<input
@@ -405,7 +435,9 @@
 						class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-cyan-500 focus:ring-cyan-500"
 					/>
 					<Smartphone class="h-4 w-4 text-slate-400" />
-					<span class="text-sm text-slate-300">SMS</span>
+					<span class="text-sm text-slate-300"
+						>{#if !$isLoading}{$_('alertRules.channels.sms')}{:else}SMS{/if}</span
+					>
 				</label>
 				<label class="flex cursor-pointer items-center gap-2">
 					<input
@@ -414,7 +446,9 @@
 						class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-cyan-500 focus:ring-cyan-500"
 					/>
 					<BellRing class="h-4 w-4 text-slate-400" />
-					<span class="text-sm text-slate-300">Push</span>
+					<span class="text-sm text-slate-300"
+						>{#if !$isLoading}{$_('alertRules.channels.push')}{:else}Push{/if}</span
+					>
 				</label>
 			</div>
 		</fieldset>
@@ -428,9 +462,11 @@
 					resetForm();
 				}}
 			>
-				Cancel
+				{#if !$isLoading}{$_('common.cancel')}{:else}Отмена{/if}
 			</Button>
-			<Button type="submit">Create Rule</Button>
+			<Button type="submit">
+				{#if !$isLoading}{$_('alertRules.createRule')}{:else}Создать правило{/if}
+			</Button>
 		</div>
 	</form>
 </Modal>

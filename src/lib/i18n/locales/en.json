@@ -190,6 +190,7 @@
 		"acknowledged": "Acknowledged",
 		"resolved": "Resolved",
 		"resolvedStatus": "Resolved",
+		"severityLabel": "Severity",
 		"severity": {
 			"info": "Info",
 			"warning": "Warning",
@@ -578,6 +579,101 @@
 		"sseError": "Error updating data (SSE)",
 		"connectionLost": "SSE connection lost, switching to polling"
 	},
+	"alertRules": {
+		"title": "Alert Rules",
+		"subtitle": "Configure alert thresholds and notifications",
+		"addRule": "Add Rule",
+		"createRule": "Create Rule",
+		"allEngines": "All Engines",
+		"howItWorks": "How Alert Rules Work",
+		"howItWorksDesc": "When a metric crosses the defined threshold for the specified duration, an alert is triggered. Notifications are sent based on the configured channels. Critical alerts always trigger immediate notifications.",
+		"notificationChannels": "Notification Channels",
+		"metrics": {
+			"temp_exhaust": "Exhaust Temperature",
+			"vibration": "Vibration",
+			"power_kw": "Power Output",
+			"gas_pressure": "Gas Pressure",
+			"total_hours": "Operating Hours"
+		},
+		"operators": {
+			"gt": "Greater than (>)",
+			"gte": "Greater or equal (≥)",
+			"lt": "Less than (<)",
+			"lte": "Less or equal (≤)",
+			"eq": "Equal (=)"
+		},
+		"channels": {
+			"email": "Email",
+			"sms": "SMS",
+			"push": "Push"
+		},
+		"form": {
+			"name": "Rule Name *",
+			"namePlaceholder": "e.g., High Temperature Alert",
+			"engine": "Engine",
+			"metric": "Metric *",
+			"condition": "Condition *",
+			"threshold": "Threshold *",
+			"duration": "Duration (sec) *"
+		}
+	},
+	"login": {
+		"pageTitle": "Login",
+		"title": "Sign in to your account",
+		"subtitle": "Industrial IoT Monitoring Platform",
+		"description": "Enter your credentials to access the dashboard",
+		"email": "Email address",
+		"password": "Password",
+		"rememberMe": "Remember me",
+		"forgotPassword": "Forgot password?",
+		"contactAdmin": "Contact administrator",
+		"signIn": "Sign in",
+		"signingIn": "Signing in...",
+		"noAccount": "Don't have an account?",
+		"createOne": "Create one",
+		"protected": "Protected by rate limiting and encryption"
+	},
+	"register": {
+		"pageTitle": "Register",
+		"title": "Create your account",
+		"description": "Register to access the monitoring dashboard",
+		"fullName": "Full name",
+		"namePlaceholder": "John Doe",
+		"confirmPassword": "Confirm password",
+		"passwordHint": "Must be at least 8 characters",
+		"createAccount": "Create account",
+		"creating": "Creating account...",
+		"haveAccount": "Already have an account?",
+		"terms": "By registering, you agree to our terms of service",
+		"errors": {
+			"passwordMismatch": "Passwords do not match",
+			"passwordLength": "Password must be at least 8 characters"
+		}
+	},
+	"dashboards": {
+		"pageTitle": "Dashboards",
+		"title": "Dashboard Builder",
+		"subtitle": "Build your personalized monitoring dashboard",
+		"editMode": "Edit",
+		"exitEditMode": "Done",
+		"saveLayout": "Save",
+		"reset": "Reset",
+		"addWidgets": "Add Widgets",
+		"emptyHint": "Click on widgets above to add them to your dashboard",
+		"chartPlaceholder": "Chart visualization",
+		"highTemp": "High Temperature",
+		"vsLastHour": "vs last hour",
+		"tipTitle": "Tip",
+		"tipText": "Drag widgets to reorder them. Click \"Save\" to save your layout to the browser.",
+		"widgets": {
+			"power": "Power Output",
+			"temperature": "Temperature",
+			"efficiency": "Efficiency",
+			"chart": "Performance Chart",
+			"alerts": "Active Alerts",
+			"uptime": "Uptime"
+		}
+	},
 	"common": {
 		"kw": " kW",
 		"celsius": "°C",
@@ -585,6 +681,7 @@
 		"error": "Error",
 		"retry": "Retry",
 		"save": "Save",
+		"saved": "Saved",
 		"cancel": "Cancel",
 		"close": "Close",
 		"yes": "Yes",

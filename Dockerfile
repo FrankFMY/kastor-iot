@@ -39,6 +39,9 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 sveltekit
 
+# Install wget for health check
+RUN apk add --no-cache wget
+
 # Copy built application
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./

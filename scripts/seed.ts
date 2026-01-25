@@ -4,6 +4,7 @@
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from '../src/lib/server/db/schema.js';
 import { hash } from '@node-rs/argon2';
@@ -57,21 +58,19 @@ async function seed() {
 		}
 	];
 
-	// Use upsert to ensure users exist
-	// Don't update email in conflict to avoid unique constraint violation
+	// Insert users, ignore conflicts (they may already exist)
+	await db.insert(schema.users).values(usersData).onConflictDoNothing();
+
+	// Update existing users with latest data (except email to avoid conflicts)
 	for (const user of usersData) {
 		await db
-			.insert(schema.users)
-			.values(user)
-			.onConflictDoUpdate({
-				target: schema.users.id,
-				set: {
-					name: user.name,
-					emailVerified: user.emailVerified,
-					role: user.role
-					// Don't update email - it might conflict with unique constraint
-				}
-			});
+			.update(schema.users)
+			.set({
+				name: user.name,
+				emailVerified: user.emailVerified,
+				role: user.role
+			})
+			.where(eq(schema.users.id, user.id));
 	}
 
 	// Create accounts for password auth

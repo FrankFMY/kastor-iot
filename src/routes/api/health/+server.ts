@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types.js';
 
 // Кэш для health check результатов (TTL: 5 секунд)
 let healthCache: {
-	result: { status: 'ok' | 'degraded' | 'error'; checks: Record<string, unknown>; timestamp: string };
+	result: { status: 'ok' | 'degraded' | 'error'; checks: Record<string, unknown>; timestamp: string; demoMode: boolean };
 	expires: number;
 } | null = null;
 
@@ -25,6 +25,9 @@ export const GET: RequestHandler = async () => {
 
 	const checks: Record<string, { status: 'ok' | 'error'; message?: string; latency?: number }> = {};
 	let overallStatus: 'ok' | 'degraded' | 'error' = 'ok';
+
+	// Check demo mode status
+	const isDemoMode = process.env.DEMO_MODE === 'true' || process.env.NODE_ENV === 'development';
 
 	// Database check with timeout
 	const dbCheck = async (): Promise<number> => {
@@ -55,6 +58,7 @@ export const GET: RequestHandler = async () => {
 		status: overallStatus,
 		timestamp: new Date().toISOString(),
 		version: '0.0.1',
+		demoMode: isDemoMode,
 		checks
 	};
 

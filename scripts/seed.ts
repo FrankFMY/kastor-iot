@@ -57,7 +57,21 @@ async function seed() {
 		}
 	];
 
-	await db.insert(schema.users).values(usersData).onConflictDoNothing();
+	// Use upsert to ensure users exist
+	for (const user of usersData) {
+		await db
+			.insert(schema.users)
+			.values(user)
+			.onConflictDoUpdate({
+				target: schema.users.id,
+				set: {
+					name: user.name,
+					email: user.email,
+					emailVerified: user.emailVerified,
+					role: user.role
+				}
+			});
+	}
 
 	// Create accounts for password auth
 	const accountsData = usersData.map((user) => ({
@@ -68,7 +82,18 @@ async function seed() {
 		password: passwordHash
 	}));
 
-	await db.insert(schema.accounts).values(accountsData).onConflictDoNothing();
+	// Use upsert for accounts too
+	for (const account of accountsData) {
+		await db
+			.insert(schema.accounts)
+			.values(account)
+			.onConflictDoUpdate({
+				target: schema.accounts.id,
+				set: {
+					password: account.password
+				}
+			});
+	}
 
 	// 2. Create engines
 	console.log('⚙️ Creating engines...');

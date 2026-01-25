@@ -17,8 +17,7 @@ export interface MaintenanceForecast {
 }
 
 export const getSpareParts = async (): Promise<SparePart[]> => {
-	// Simulate API delay
-	await new Promise((r) => setTimeout(r, 500));
+	// Removed artificial delay for faster page loading
 	return [
 		{ name: 'Масляный фильтр', quantity: 12, min: 5 },
 		{ name: 'Воздушный фильтр', quantity: 8, min: 4 },

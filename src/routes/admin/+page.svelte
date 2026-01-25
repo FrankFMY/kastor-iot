@@ -20,8 +20,21 @@
 	import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
 	import type { Engine } from '$lib/types/index.js';
 
+	// SSR data from +page.server.ts
+	interface Props {
+		data: {
+			engines?: Engine[];
+		};
+	}
+	const { data }: Props = $props();
+
 	let engines: Engine[] = $state([]);
-	let loading = $state(true);
+	let loading = $state(false);
+
+	// Sync engines with SSR data when props change
+	$effect(() => {
+		engines = data.engines || [];
+	});
 
 	// Engine modal state
 	let showEngineModal = $state(false);
@@ -86,18 +99,6 @@
 	// Demo reset state
 	let showResetModal = $state(false);
 	let resetting = $state(false);
-
-	onMount(async () => {
-		try {
-			const res = await fetch(`${base}/api/status`);
-			if (res.ok) {
-				const data = await res.json();
-				engines = data.engines;
-			}
-		} finally {
-			loading = false;
-		}
-	});
 
 	// Engine handlers
 	function openAddEngine() {
@@ -385,6 +386,19 @@
 				{#each { length: 4 } as _item, i (i)}
 					<Card class="animate-pulse"><div class="h-20"></div></Card>
 				{/each}
+			{:else if !engines || engines.length === 0}
+				<!-- Empty State -->
+				<Card class="p-8 text-center">
+					<Cpu class="mx-auto mb-4 h-12 w-12 text-slate-500" />
+					<h3 class="mb-2 text-lg font-semibold text-white">Нет двигателей</h3>
+					<p class="mb-4 text-slate-400">
+						Добавьте двигатели в базу данных или проверьте подключение к базе данных.
+					</p>
+					<Button onclick={openAddEngine} class="gap-2">
+						<Plus class="h-4 w-4" />
+						Добавить двигатель
+					</Button>
+				</Card>
 			{:else}
 				{#each engines as engine (engine.id)}
 					<Card>

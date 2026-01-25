@@ -26,27 +26,25 @@
 		total_hours: number;
 	}
 
-	let forecasts: MaintenanceForecast[] = $state([]);
-	let spareParts: SparePart[] = $state([]);
-	let loading = $state(true);
-	const SERVICE_INTERVAL = 2000;
+	// SSR data from +page.server.ts
+	interface Props {
+		data: {
+			maintenanceRecords?: MaintenanceForecast[];
+			spareParts?: SparePart[];
+			engines?: Engine[];
+			budget?: {
+				next7Days: number;
+				next30Days: number;
+				nextQuarter: number;
+			};
+		};
+	}
+	const { data }: Props = $props();
 
-	onMount(async () => {
-		try {
-			const [res, parts] = await Promise.all([fetch(`${base}/api/status`), getSpareParts()]);
-
-			spareParts = parts;
-
-			if (res.ok) {
-				const data = await res.json();
-				forecasts = data.engines.map((engine: Engine) => calculateForecast(engine));
-			}
-		} catch (e) {
-			console.error(e);
-		} finally {
-			loading = false;
-		}
-	});
+	const SERVICE_INTERVAL = 2000; // Service interval in hours
+	const forecasts = $derived(data.maintenanceRecords || []);
+	const spareParts = $derived(data.spareParts || []);
+	let loading = $state(false);
 
 	function getUrgencyBadge(urgency: MaintenanceForecast['urgency']) {
 		const variants: Record<MaintenanceForecast['urgency'], 'success' | 'warning' | 'danger'> = {
@@ -69,9 +67,7 @@
 		}
 	}
 
-	const totalBudget = $derived(
-		forecasts.filter((f) => f.days_remaining <= 30).reduce((sum, f) => sum + f.estimated_cost, 0)
-	);
+	const totalBudget = $derived(data.budget?.next30Days || 0);
 </script>
 
 <div class="mx-auto max-w-6xl space-y-6">
@@ -104,9 +100,19 @@
 			{/each}
 		</div>
 	{:else}
-		<!-- Mobile Card View (visible on small screens) -->
-		<div class="space-y-4 md:hidden">
-			{#each forecasts as forecast (forecast.engine_id)}
+		{#if forecasts.length === 0}
+			<!-- Empty State -->
+			<Card class="p-8 text-center">
+				<Wrench class="mx-auto mb-4 h-12 w-12 text-slate-500" />
+				<h3 class="mb-2 text-lg font-semibold text-white">Нет данных о техобслуживании</h3>
+				<p class="text-slate-400">
+					Данные появятся после загрузки информации о двигателях из базы данных.
+				</p>
+			</Card>
+		{:else}
+			<!-- Mobile Card View (visible on small screens) -->
+			<div class="space-y-4 md:hidden">
+				{#each forecasts as forecast (forecast.engine_id)}
 				<Card class={cn('overflow-hidden', getUrgencyColor(forecast.urgency))}>
 					<!-- Card Header -->
 					<div class="mb-4 flex items-start justify-between">
@@ -275,6 +281,7 @@
 				</table>
 			</div>
 		</Card>
+		{/if}
 
 		<!-- Spare Parts Inventory & Budget -->
 		<div class="grid gap-6 lg:grid-cols-2">
@@ -284,7 +291,12 @@
 					{$_('maintenance.sparePartsInventory')}
 				</h3>
 				<div class="space-y-2 sm:space-y-3">
-					{#each spareParts as part (part.name)}
+					{#if spareParts.length === 0}
+						<div class="rounded-lg bg-slate-800/50 px-3 py-2.5 text-sm text-slate-400">
+							Нет данных о запчастях
+						</div>
+					{:else}
+						{#each spareParts as part (part.name)}
 						<div
 							class="flex items-center justify-between rounded-lg bg-slate-800/50 px-3 py-2.5 sm:px-4 sm:py-3"
 						>
@@ -303,7 +315,8 @@
 								{/if}
 							</div>
 						</div>
-					{/each}
+						{/each}
+					{/if}
 				</div>
 			</Card>
 
@@ -316,27 +329,19 @@
 					<div class="rounded-lg bg-slate-800/50 p-3 sm:p-4">
 						<div class="text-xs text-slate-400 sm:text-sm">{$_('maintenance.next7days')}</div>
 						<div class="mt-1 text-xl font-bold text-rose-400 sm:text-2xl">
-							{currencyState.format(
-								forecasts
-									.filter((f) => f.days_remaining <= 7)
-									.reduce((sum, f) => sum + f.estimated_cost, 0)
-							)}
+							{currencyState.format(data.budget?.next7Days || 0)}
 						</div>
 					</div>
 					<div class="rounded-lg bg-slate-800/50 p-3 sm:p-4">
 						<div class="text-xs text-slate-400 sm:text-sm">{$_('maintenance.next30days')}</div>
 						<div class="mt-1 text-xl font-bold text-amber-400 sm:text-2xl">
-							{currencyState.format(
-								forecasts
-									.filter((f) => f.days_remaining <= 30)
-									.reduce((sum, f) => sum + f.estimated_cost, 0)
-							)}
+							{currencyState.format(data.budget?.next30Days || 0)}
 						</div>
 					</div>
 					<div class="rounded-lg bg-slate-800/50 p-3 sm:p-4">
 						<div class="text-xs text-slate-400 sm:text-sm">{$_('maintenance.nextQuarter')}</div>
 						<div class="mt-1 text-xl font-bold text-emerald-400 sm:text-2xl">
-							{currencyState.format(forecasts.reduce((sum, f) => sum + f.estimated_cost, 0))}
+							{currencyState.format(data.budget?.nextQuarter || 0)}
 						</div>
 					</div>
 				</div>

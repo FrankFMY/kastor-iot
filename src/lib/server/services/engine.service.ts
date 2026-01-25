@@ -4,6 +4,7 @@ import { sql, desc } from 'drizzle-orm';
 import type { Engine, EngineWithMetrics, DashboardSummary } from '$lib/types/index.js';
 import { ENGINE_CONSTANTS } from '$lib/types/index.js';
 import { getLatestEvents } from './event.service.js';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../cache.js';
 
 /**
  * Get recent downtimes
@@ -24,43 +25,70 @@ interface TelemetryRow {
 
 /**
  * Get all engines from database
+ * CACHED: Results are cached for 30 seconds to reduce database load
  */
 export async function getAllEngines(): Promise<Engine[]> {
-	const result = await db
-		.select({
-			id: engines.id,
-			model: engines.model,
-			status: engines.status,
-			total_hours: engines.total_hours
-		})
-		.from(engines);
+	return cache.getOrSet(
+		CACHE_KEYS.ENGINES_LIST,
+		async () => {
+			const result = await db
+				.select({
+					id: engines.id,
+					model: engines.model,
+					status: engines.status,
+					total_hours: engines.total_hours
+				})
+				.from(engines);
 
-	return result.map((e) => ({
-		...e,
-		planned_power_kw: 1200 // Default - column doesn't exist in DB yet
-	}));
+			return result.map((e) => ({
+				...e,
+				planned_power_kw: 1200 // Default - column doesn't exist in DB yet
+			}));
+		},
+		CACHE_TTL.MEDIUM // 30 seconds
+	);
 }
 
 /**
  * Get latest telemetry for all engines
+ * OPTIMIZED: Uses efficient query with index scan for better performance on large tables
+ * CACHED: Results are cached for 2 seconds to reduce database load
  */
 export async function getLatestTelemetry(): Promise<Map<string, TelemetryRow>> {
+	// Try cache first (2 second TTL for near real-time data)
+	// Use separate cache key for telemetry data
+	const cacheKey = 'kastor:telemetry:latest';
+	const cached = await cache.get<Record<string, TelemetryRow>>(cacheKey);
+	if (cached) {
+		// Convert cached object back to Map
+		return new Map(Object.entries(cached));
+	}
+
+	// Optimized query: Get latest telemetry per engine using efficient index scan
+	// Uses the idx_telemetry_engine_time_desc index for fast lookups
+	// For TimescaleDB hypertables, this is much faster than scanning entire table
 	const result = await db.execute<TelemetryRow>(sql`
-		SELECT DISTINCT ON (engine_id) 
-			engine_id, 
-			power_kw, 
-			temp_exhaust, 
+		SELECT DISTINCT ON (engine_id)
+			engine_id,
+			power_kw,
+			temp_exhaust,
 			gas_consumption,
 			vibration,
 			gas_pressure
-		FROM ${telemetry} 
+		FROM ${telemetry}
 		ORDER BY engine_id, time DESC
 	`);
 
 	const telemetryMap = new Map<string, TelemetryRow>();
+	const telemetryObj: Record<string, TelemetryRow> = {};
 	for (const row of result) {
 		telemetryMap.set(row.engine_id, row);
+		telemetryObj[row.engine_id] = row;
 	}
+
+	// Cache as object (Map doesn't serialize well to JSON)
+	await cache.set(cacheKey, telemetryObj, CACHE_TTL.SHORT);
+
 	return telemetryMap;
 }
 
@@ -150,14 +178,26 @@ export function calculateDashboardSummary(engineData: EngineWithMetrics[]): Dash
 
 /**
  * Get full dashboard data
+ * OPTIMIZED: Uses cached telemetry data for better performance
+ * CACHED: Full dashboard response is cached for 2 seconds for real-time feel
  */
 export async function getDashboardData() {
-	const [engineData, eventData] = await Promise.all([getEnginesWithMetrics(), getLatestEvents(10)]);
-	const summary = calculateDashboardSummary(engineData);
+	return cache.getOrSet(
+		CACHE_KEYS.DASHBOARD_DATA,
+		async () => {
+			// Use cached telemetry (already cached in getLatestTelemetry)
+			const [engineData, eventData] = await Promise.all([
+				getEnginesWithMetrics(),
+				getLatestEvents(10)
+			]);
+			const summary = calculateDashboardSummary(engineData);
 
-	return {
-		engines: engineData,
-		events: eventData,
-		summary
-	};
+			return {
+				engines: engineData,
+				events: eventData,
+				summary
+			};
+		},
+		CACHE_TTL.SHORT // 2 seconds - dashboard feels real-time
+	);
 }

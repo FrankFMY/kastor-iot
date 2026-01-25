@@ -1,6 +1,7 @@
 import type { MaintenanceForecast, Engine } from '$lib/types/index.js';
 import { SERVICE_TYPES, ENGINE_CONSTANTS } from '$lib/types/index.js';
 import { getAllEngines } from './engine.service.js';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../cache.js';
 
 /**
  * Calculate maintenance forecast for an engine
@@ -63,15 +64,23 @@ export function getNextServiceType(totalHours: number): keyof typeof SERVICE_TYP
 
 /**
  * Get maintenance forecasts for all engines
+ * CACHED: Results are cached for 30 seconds to reduce computation overhead
  */
 export async function getAllMaintenanceForecasts(): Promise<MaintenanceForecast[]> {
-	const engines = await getAllEngines();
+	return cache.getOrSet(
+		CACHE_KEYS.MAINTENANCE_FORECASTS,
+		async () => {
+			const engines = await getAllEngines();
 
-	return engines
-		.map((engine: Engine) => calculateMaintenanceForecast(engine))
-		.sort(
-			(a: MaintenanceForecast, b: MaintenanceForecast) => a.hours_remaining - b.hours_remaining
-		);
+			return engines
+				.map((engine: Engine) => calculateMaintenanceForecast(engine))
+				.sort(
+					(a: MaintenanceForecast, b: MaintenanceForecast) =>
+						a.hours_remaining - b.hours_remaining
+				);
+		},
+		CACHE_TTL.MEDIUM // 30 seconds
+	);
 }
 
 /**

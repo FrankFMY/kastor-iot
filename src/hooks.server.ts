@@ -106,7 +106,7 @@ setInterval(cleanupOldData, 60 * 60 * 1000);
 // Run initial cleanup after 1 minute of startup
 setTimeout(cleanupOldData, 60 * 1000);
 
-async function seedEngines() {
+export async function seedEngines() {
 	const engineList = [
 		{ id: 'gpu-1', model: 'Weichai 16VCN', hours: 8500 },
 		{ id: 'gpu-2', model: 'Weichai 16VCN', hours: 12300 },
@@ -134,6 +134,31 @@ async function seedEngines() {
 			});
 	}
 	console.log('[KASTOR] Engines seeded and synced');
+}
+
+// Startup initialization - seed data if database is empty
+if (!building) {
+	(async () => {
+		try {
+			const existingEngines = await db.select().from(engines).limit(1);
+			if (existingEngines.length === 0) {
+				console.log('[KASTOR] Database empty, seeding engines on startup...');
+				await seedEngines();
+			}
+
+			// Seed spare parts
+			const { seedSpareParts } = await import('$lib/server/services/maintenance.service.js');
+			await seedSpareParts();
+
+			console.log('[KASTOR] Startup seeding complete');
+		} catch (error) {
+			console.error('[KASTOR] CRITICAL - Startup seeding failed:', error);
+			if (error instanceof Error) {
+				console.error('[KASTOR] Error details:', error.message);
+				console.error('[KASTOR] Stack trace:', error.stack);
+			}
+		}
+	})();
 }
 
 // Track recent alerts to prevent flooding (engine:metric -> timestamp)

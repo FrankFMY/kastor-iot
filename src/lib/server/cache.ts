@@ -175,6 +175,8 @@ export const CACHE_KEYS = {
 	DASHBOARD_DATA: 'kastor:dashboard:data',
 	ENGINES_LIST: 'kastor:engines:list',
 	ENGINES_WITH_METRICS: 'kastor:engines:metrics',
+	MAINTENANCE_FORECASTS: 'kastor:maintenance:forecasts',
+	EVENTS_LATEST: (limit: number) => `kastor:events:latest:${limit}`,
 	ALERTS_ACTIVE: 'kastor:alerts:active',
 	ALERTS_STATS: 'kastor:alerts:stats',
 	ENGINE_DETAIL: (id: string) => `kastor:engine:${id}`,

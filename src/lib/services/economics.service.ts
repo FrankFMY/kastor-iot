@@ -15,8 +15,7 @@ export interface MonthlyTrend {
 }
 
 export const getCostBreakdown = async (): Promise<CostBreakdown> => {
-	// Simulate API delay
-	await new Promise((r) => setTimeout(r, 500));
+	// Removed artificial delay for faster page loading
 	return {
 		gas: 2.85,
 		depreciation: 0.95,
@@ -29,8 +28,7 @@ export const getCostBreakdown = async (): Promise<CostBreakdown> => {
 };
 
 export const getMonthlyTrend = async (): Promise<MonthlyTrend[]> => {
-	// Simulate API delay
-	await new Promise((r) => setTimeout(r, 500));
+	// Removed artificial delay for faster page loading
 	return [
 		{ month: 'Июл', cost: 4.8, production: 2100 },
 		{ month: 'Авг', cost: 4.9, production: 2200 },

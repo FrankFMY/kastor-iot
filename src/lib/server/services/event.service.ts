@@ -2,20 +2,30 @@ import { db } from '../db/index.js';
 import { events } from '../db/schema.js';
 import { desc, eq, gte } from 'drizzle-orm';
 import type { EventDisplay, EventLevel } from '$lib/types/index.js';
+import { cache, CACHE_KEYS, CACHE_TTL } from '../cache.js';
 
 /**
  * Get latest events for the event feed
+ * CACHED: Results are cached for 2 seconds for near real-time performance
  */
 export async function getLatestEvents(limit: number = 10): Promise<EventDisplay[]> {
-	const result = await db.select().from(events).orderBy(desc(events.time)).limit(limit);
+	const cacheKey = CACHE_KEYS.EVENTS_LATEST(limit);
 
-	return result.map((e) => ({
-		id: e.id,
-		time: e.time.toISOString(),
-		level: e.level as EventLevel,
-		message: e.message,
-		engine_id: e.engine_id
-	}));
+	return cache.getOrSet(
+		cacheKey,
+		async () => {
+			const result = await db.select().from(events).orderBy(desc(events.time)).limit(limit);
+
+			return result.map((e) => ({
+				id: e.id,
+				time: e.time.toISOString(),
+				level: e.level as EventLevel,
+				message: e.message,
+				engine_id: e.engine_id
+			}));
+		},
+		CACHE_TTL.SHORT // 2 seconds
+	);
 }
 
 /**

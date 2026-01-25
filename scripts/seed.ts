@@ -322,7 +322,67 @@ async function seed() {
 					severity: alert.severity,
 					status: alert.status,
 					title: alert.title,
-					message: alert.message
+					message: alert.message,
+					actualValue: alert.actualValue
+				}
+			});
+	}
+
+	// Add more demo alerts for better showcase
+	const additionalAlerts = [
+		{
+			id: 'alert-6',
+			engineId: 'gpu-5',
+			severity: 'warning' as const,
+			status: 'active' as const,
+			title: 'Повышенный расход газа',
+			message: 'Расход газа превысил нормальный уровень на 15%',
+			metric: 'gas_consumption',
+			threshold: 450,
+			actualValue: 485,
+			createdAt: new Date(now.getTime() - 30 * 60 * 1000)
+		},
+		{
+			id: 'alert-7',
+			engineId: 'gpu-6',
+			severity: 'info' as const,
+			status: 'active' as const,
+			title: 'Приближается плановое ТО',
+			message: 'Двигатель GPU-6 приближается к интервалу планового обслуживания (500 часов)',
+			metric: 'total_hours',
+			threshold: 500,
+			actualValue: 100,
+			createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000)
+		},
+		{
+			id: 'alert-8',
+			engineId: 'gpu-1',
+			severity: 'warning' as const,
+			status: 'resolved' as const,
+			title: 'Временное снижение мощности',
+			message: 'Выходная мощность временно снизилась ниже порога',
+			metric: 'power_kw',
+			threshold: 1000,
+			actualValue: 950,
+			createdAt: new Date(now.getTime() - 3 * 60 * 60 * 1000),
+			resolvedAt: new Date(now.getTime() - 2.5 * 60 * 60 * 1000),
+			acknowledgedBy: 'user-operator'
+		}
+	];
+
+	for (const alert of additionalAlerts) {
+		await db
+			.insert(schema.alerts)
+			.values(alert)
+			.onConflictDoUpdate({
+				target: schema.alerts.id,
+				set: {
+					createdAt: alert.createdAt,
+					severity: alert.severity,
+					status: alert.status,
+					title: alert.title,
+					message: alert.message,
+					actualValue: alert.actualValue
 				}
 			});
 	}
@@ -390,7 +450,23 @@ async function seed() {
 		}
 	];
 
-	await db.insert(schema.workOrders).values(workOrdersData).onConflictDoNothing();
+	// Use upsert to update existing work orders with fresh data
+	for (const wo of workOrdersData) {
+		await db
+			.insert(schema.workOrders)
+			.values(wo)
+			.onConflictDoUpdate({
+				target: schema.workOrders.id,
+				set: {
+					title: wo.title,
+					description: wo.description,
+					status: wo.status,
+					priority: wo.priority,
+					dueDate: wo.dueDate,
+					estimatedHours: wo.estimatedHours
+				}
+			});
+	}
 
 	// 7. Create maintenance schedules
 	console.log('📅 Creating maintenance schedules...');

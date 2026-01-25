@@ -150,6 +150,11 @@ async function createAlertFromTelemetry(
 	threshold: number,
 	severity: 'warning' | 'critical'
 ) {
+	// Skip real alert creation in demo mode - use mocked alerts from seed instead
+	if (env.DEMO_MODE === 'true' || env.NODE_ENV === 'development') {
+		return;
+	}
+
 	const alertKey = `${engineId}:${metric}:${severity}`;
 	const now = Date.now();
 	const lastAlert = recentAlerts.get(alertKey);

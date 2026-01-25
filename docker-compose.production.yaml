@@ -78,6 +78,8 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-kastor-demo-secret-change-in-production-32chars}
       AUTH_SECRET: ${AUTH_SECRET:-kastor-demo-secret-change-in-production-32chars}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:3000}
+      # Demo mode - disable real alerts, use mocked data from seed
+      DEMO_MODE: ${DEMO_MODE:-true}
     healthcheck:
       test:
         ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/api/health']

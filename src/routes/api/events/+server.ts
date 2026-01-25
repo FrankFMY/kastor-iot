@@ -1,19 +1,19 @@
 import { json, error } from '@sveltejs/kit';
 import { db } from '$lib/server/db/index.js';
 import { events } from '$lib/server/db/schema.js';
-import { getDashboardData } from '$lib/server/services/engine.service.js';
+import { subscribe, getCurrentData } from '$lib/server/services/sse-broadcast.service.js';
 
 export async function GET() {
 	// Track intervals for cleanup
-	let dataInterval: ReturnType<typeof setInterval> | null = null;
 	let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+	let unsubscribe: (() => void) | null = null;
 	let isClosed = false;
 
 	const cleanup = () => {
 		isClosed = true;
-		if (dataInterval) {
-			clearInterval(dataInterval);
-			dataInterval = null;
+		if (unsubscribe) {
+			unsubscribe();
+			unsubscribe = null;
 		}
 		if (heartbeatInterval) {
 			clearInterval(heartbeatInterval);
@@ -34,9 +34,9 @@ export async function GET() {
 				}
 			};
 
-			// Send initial full state
+			// Send initial full state from cached data
 			try {
-				const initialData = await getDashboardData();
+				const initialData = await getCurrentData();
 				sendEvent('full', {
 					...initialData,
 					timestamp: new Date().toISOString()
@@ -45,24 +45,16 @@ export async function GET() {
 				console.error('[SSE] Initial state error:', e);
 			}
 
-			// Periodic updates (diffs)
-			dataInterval = setInterval(async () => {
-				if (isClosed) {
-					cleanup();
-					return;
-				}
-				try {
-					const currentData = await getDashboardData();
-					sendEvent('diff', {
-						type: 'diff',
-						...currentData,
-						timestamp: new Date().toISOString(),
-						hash: Math.random().toString(36).substring(7)
-					});
-				} catch (_e) {
-					cleanup();
-				}
-			}, 5000);
+			// Subscribe to shared data updates (all clients get same data from cache)
+			unsubscribe = subscribe((data) => {
+				if (isClosed) return;
+				sendEvent('diff', {
+					type: 'diff',
+					...data,
+					timestamp: new Date().toISOString(),
+					hash: Math.random().toString(36).substring(7)
+				});
+			});
 
 			// Keep-alive heartbeat
 			heartbeatInterval = setInterval(() => {

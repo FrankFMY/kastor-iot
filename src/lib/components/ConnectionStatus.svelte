@@ -15,13 +15,14 @@
 	let lastError = $state<string | null>(null);
 
 	const MAX_RECONNECT_ATTEMPTS = 5;
-	const HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
+	const HEALTH_CHECK_INTERVAL = 60000; // 60 seconds (увеличено для снижения нагрузки)
 	const RECONNECT_DELAY = 3000; // 3 seconds
 
 	async function checkApiHealth(): Promise<boolean> {
 		try {
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 5000);
+			// Увеличенный таймаут для демо (15 секунд вместо 5)
+			const timeoutId = setTimeout(() => controller.abort(), 15000);
 
 			const res = await fetch(`${base}/api/health`, {
 				signal: controller.signal

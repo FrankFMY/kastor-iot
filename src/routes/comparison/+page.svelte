@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { _, isLoading } from 'svelte-i18n';
 	import { base } from '$app/paths';
 	import { Card } from '$lib/components/ui/index.js';
@@ -19,7 +19,7 @@
 	type EChartsInstance = {
 		dispose: () => void;
 		resize: () => void;
-		setOption: (option: unknown) => void;
+		setOption: (option: unknown, notMerge?: boolean, lazyUpdate?: boolean) => void;
 	};
 	let chartInstance: EChartsInstance | null = null;
 
@@ -42,7 +42,6 @@
 			if (res.ok) {
 				const data = await res.json();
 				engines = data.engines;
-				updateChart();
 			} else {
 				loadingError = `Failed to load: ${res.status} ${res.statusText}`;
 			}
@@ -55,20 +54,30 @@
 			console.error('Failed to load data', e);
 		} finally {
 			isDataLoading = false;
+			// Ждем следующий тик рендеринга, чтобы chartContainer был готов в DOM
+			await tick();
+			updateChart();
 		}
 	}
 
 	async function updateChart() {
-		if (!chartContainer || selectedEngines.length === 0) return;
+		if (!chartContainer) return;
 
 		const echarts = await import('echarts');
 		if (!chartInstance) {
 			chartInstance = echarts.init(chartContainer);
 		}
 
+		// Если нет выбранных двигателей, очищаем график
+		if (selectedEngines.length === 0) {
+			chartInstance?.setOption({ series: [] }, true);
+			return;
+		}
+
 		const selected = engines.filter((e) => selectedEngines.includes(e.id));
 		const isMobile = window.innerWidth < 640;
 
+		// Используем notMerge: true чтобы полностью заменить опции и удалить старые серии
 		chartInstance?.setOption({
 			tooltip: {
 				trigger: 'axis',
@@ -129,7 +138,7 @@
 				},
 				barMaxWidth: isMobile ? 30 : 50
 			}))
-		});
+		}, true); // notMerge: true - полностью заменяем опции, удаляя старые серии
 	}
 
 	function toggleEngine(engineId: string) {
@@ -160,6 +169,13 @@
 		// Redraw chart with new mobile/desktop settings
 		updateChart();
 	}
+
+	// Автоматически обновляем график когда контейнер готов и данные загружены
+	$effect(() => {
+		if (chartContainer && engines.length > 0 && selectedEngines.length > 0 && !isDataLoading) {
+			updateChart();
+		}
+	});
 
 	const selectedEngineData = $derived(engines.filter((e) => selectedEngines.includes(e.id)));
 

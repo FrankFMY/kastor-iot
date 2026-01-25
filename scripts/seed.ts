@@ -60,6 +60,7 @@ async function seed() {
 
 	// Ensure users exist - handle email conflicts by finding existing user
 	const userIdMap = new Map<string, string>(); // email -> actual user id
+	const originalIdMap = new Map<string, string>(); // original id -> actual user id
 
 	for (const user of usersData) {
 		// Try to find existing user by email
@@ -69,10 +70,12 @@ async function seed() {
 			.where(eq(schema.users.email, user.email))
 			.limit(1);
 
+		let actualId: string;
 		if (existingUser.length > 0) {
 			// User exists - use existing id and update
-			const existingId = existingUser[0].id;
-			userIdMap.set(user.email, existingId);
+			actualId = existingUser[0].id;
+			userIdMap.set(user.email, actualId);
+			originalIdMap.set(user.id, actualId);
 			await db
 				.update(schema.users)
 				.set({
@@ -80,12 +83,14 @@ async function seed() {
 					emailVerified: user.emailVerified,
 					role: user.role
 				})
-				.where(eq(schema.users.id, existingId));
+				.where(eq(schema.users.id, actualId));
 		} else {
 			// User doesn't exist - try to insert with desired id
 			try {
 				await db.insert(schema.users).values(user);
-				userIdMap.set(user.email, user.id);
+				actualId = user.id;
+				userIdMap.set(user.email, actualId);
+				originalIdMap.set(user.id, actualId);
 			} catch (_e) {
 				// If id conflict, user with this id already exists - use it
 				const existingById = await db
@@ -94,7 +99,9 @@ async function seed() {
 					.where(eq(schema.users.id, user.id))
 					.limit(1);
 				if (existingById.length > 0) {
-					userIdMap.set(user.email, existingById[0].id);
+					actualId = existingById[0].id;
+					userIdMap.set(user.email, actualId);
+					originalIdMap.set(user.id, actualId);
 					// Update existing user
 					await db
 						.update(schema.users)
@@ -317,7 +324,8 @@ async function seed() {
 			metric: 'temp_exhaust',
 			threshold: 530,
 			actualValue: 547,
-			createdAt: new Date(now.getTime() - 15 * 60 * 1000)
+			createdAt: new Date(now.getTime() - 15 * 60 * 1000),
+			acknowledgedBy: null as string | null
 		},
 		{
 			id: 'alert-2',
@@ -331,7 +339,7 @@ async function seed() {
 			actualValue: 10.4,
 			createdAt: new Date(now.getTime() - 45 * 60 * 1000),
 			acknowledgedAt: new Date(now.getTime() - 30 * 60 * 1000),
-			acknowledgedBy: 'user-operator'
+			acknowledgedBy: originalIdMap.get('user-operator') || null
 		},
 		{
 			id: 'alert-3',
@@ -346,7 +354,7 @@ async function seed() {
 			createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
 			acknowledgedAt: new Date(now.getTime() - 1.5 * 60 * 60 * 1000),
 			resolvedAt: new Date(now.getTime() - 1 * 60 * 60 * 1000),
-			acknowledgedBy: 'user-operator'
+			acknowledgedBy: originalIdMap.get('user-operator') || null
 		},
 		{
 			id: 'alert-4',
@@ -361,7 +369,7 @@ async function seed() {
 			createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000),
 			acknowledgedAt: new Date(now.getTime() - 23 * 60 * 60 * 1000),
 			resolvedAt: new Date(now.getTime() - 20 * 60 * 60 * 1000),
-			acknowledgedBy: 'user-admin'
+			acknowledgedBy: originalIdMap.get('user-admin') || null
 		},
 		{
 			id: 'alert-5',
@@ -373,7 +381,8 @@ async function seed() {
 			metric: 'gas_pressure',
 			threshold: 2.5,
 			actualValue: 2.1,
-			createdAt: new Date(now.getTime() - 5 * 60 * 1000)
+			createdAt: new Date(now.getTime() - 5 * 60 * 1000),
+			acknowledgedBy: null as string | null
 		}
 	];
 
@@ -390,7 +399,8 @@ async function seed() {
 					status: alert.status,
 					title: alert.title,
 					message: alert.message,
-					actualValue: alert.actualValue
+					actualValue: alert.actualValue,
+					acknowledgedBy: alert.acknowledgedBy
 				}
 			});
 	}
@@ -407,7 +417,8 @@ async function seed() {
 			metric: 'gas_consumption',
 			threshold: 450,
 			actualValue: 485,
-			createdAt: new Date(now.getTime() - 30 * 60 * 1000)
+			createdAt: new Date(now.getTime() - 30 * 60 * 1000),
+			acknowledgedBy: null as string | null
 		},
 		{
 			id: 'alert-7',
@@ -419,7 +430,8 @@ async function seed() {
 			metric: 'total_hours',
 			threshold: 500,
 			actualValue: 100,
-			createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000)
+			createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+			acknowledgedBy: null as string | null
 		},
 		{
 			id: 'alert-8',
@@ -433,7 +445,7 @@ async function seed() {
 			actualValue: 950,
 			createdAt: new Date(now.getTime() - 3 * 60 * 60 * 1000),
 			resolvedAt: new Date(now.getTime() - 2.5 * 60 * 60 * 1000),
-			acknowledgedBy: 'user-operator'
+			acknowledgedBy: originalIdMap.get('user-operator') || null
 		}
 	];
 
@@ -449,7 +461,8 @@ async function seed() {
 					status: alert.status,
 					title: alert.title,
 					message: alert.message,
-					actualValue: alert.actualValue
+					actualValue: alert.actualValue,
+					acknowledgedBy: alert.acknowledgedBy
 				}
 			});
 	}
@@ -465,7 +478,7 @@ async function seed() {
 			status: 'open' as const,
 			priority: 'medium' as const,
 			assignedTo: null,
-			createdBy: 'user-operator',
+			createdBy: originalIdMap.get('user-operator') || null,
 			createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
 			dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
 			estimatedHours: 4,
@@ -478,8 +491,8 @@ async function seed() {
 			engineId: 'gpu-2',
 			status: 'in_progress' as const,
 			priority: 'high' as const,
-			assignedTo: 'user-technician',
-			createdBy: 'user-operator',
+			assignedTo: originalIdMap.get('user-technician') || null,
+			createdBy: originalIdMap.get('user-operator') || null,
 			createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
 			dueDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000),
 			estimatedHours: 6,
@@ -492,8 +505,8 @@ async function seed() {
 			engineId: 'gpu-4',
 			status: 'completed' as const,
 			priority: 'low' as const,
-			assignedTo: 'user-technician',
-			createdBy: 'user-operator',
+			assignedTo: originalIdMap.get('user-technician') || null,
+			createdBy: originalIdMap.get('user-operator') || null,
 			createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
 			dueDate: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
 			completedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
@@ -509,7 +522,7 @@ async function seed() {
 			status: 'open' as const,
 			priority: 'critical' as const,
 			assignedTo: null,
-			createdBy: 'user-admin',
+			createdBy: originalIdMap.get('user-admin') || null,
 			createdAt: new Date(now.getTime() - 4 * 60 * 60 * 1000),
 			dueDate: new Date(now.getTime() + 12 * 60 * 60 * 1000),
 			estimatedHours: 3,

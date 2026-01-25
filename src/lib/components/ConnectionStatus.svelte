@@ -136,7 +136,7 @@
 
 	const bannerBorderClass = $derived(
 		cn(
-			'fixed inset-x-0 top-0 z-50 border-b',
+			'fixed inset-x-0 top-0 z-[60] border-b',
 			isWarning && 'border-amber-500/30',
 			isSuccess && 'border-emerald-500/30',
 			isError && 'border-rose-500/30'

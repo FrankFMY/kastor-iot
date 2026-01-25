@@ -23,16 +23,38 @@
 	};
 	let chartInstance: EChartsInstance | null = null;
 
+	let loadingError = $state<string | null>(null);
+	let isDataLoading = $state(false);
+
 	async function loadData() {
+		isDataLoading = true;
+		loadingError = null;
 		try {
-			const res = await fetch(`${base}/api/status`);
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+			const res = await fetch(`${base}/api/status`, {
+				signal: controller.signal
+			});
+
+			clearTimeout(timeoutId);
+
 			if (res.ok) {
 				const data = await res.json();
 				engines = data.engines;
 				updateChart();
+			} else {
+				loadingError = `Failed to load: ${res.status} ${res.statusText}`;
 			}
 		} catch (e) {
+			if (e instanceof Error && e.name === 'AbortError') {
+				loadingError = 'Request timeout - server is slow to respond';
+			} else {
+				loadingError = e instanceof Error ? e.message : 'Failed to load data';
+			}
 			console.error('Failed to load data', e);
+		} finally {
+			isDataLoading = false;
 		}
 	}
 
@@ -164,43 +186,72 @@
 	</div>
 
 	<!-- Engine Selection -->
-	<Card class="p-4">
-		<div class="mb-3 text-sm text-slate-400">
-			{#if !$isLoading}{$_('comparison.selectEngines')}{:else}Выберите двигатели (макс 4){/if}:
-		</div>
-		<div class="flex flex-wrap gap-2">
-			{#each engines as engine (engine.id)}
+	{#if !isDataLoading && !loadingError}
+		<Card class="p-4">
+			<div class="mb-3 text-sm text-slate-400">
+				{#if !$isLoading}{$_('comparison.selectEngines')}{:else}Выберите двигатели (макс 4){/if}:
+			</div>
+			<div class="flex flex-wrap gap-2">
+				{#each engines as engine (engine.id)}
+					<button
+						type="button"
+						class={cn(
+							'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition',
+							selectedEngines.includes(engine.id)
+								? 'bg-cyan-500 text-white'
+								: 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+						)}
+						onclick={() => toggleEngine(engine.id)}
+					>
+						{engine.id.toUpperCase()}
+						{#if selectedEngines.includes(engine.id)}
+							<X class="h-3 w-3" />
+						{:else}
+							<Plus class="h-3 w-3" />
+						{/if}
+					</button>
+				{/each}
+			</div>
+		</Card>
+	{/if}
+
+	<!-- Loading/Error State -->
+	{#if isDataLoading}
+		<Card class="p-8 text-center">
+			<div class="flex flex-col items-center gap-4">
+				<div class="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-500"></div>
+				<p class="text-slate-400">Загрузка данных...</p>
+			</div>
+		</Card>
+	{:else if loadingError}
+		<Card class="p-8 text-center">
+			<div class="flex flex-col items-center gap-4">
+				<div class="text-rose-400">⚠️</div>
+				<p class="text-slate-300">{loadingError}</p>
 				<button
 					type="button"
-					class={cn(
-						'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition',
-						selectedEngines.includes(engine.id)
-							? 'bg-cyan-500 text-white'
-							: 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-					)}
-					onclick={() => toggleEngine(engine.id)}
+					onclick={loadData}
+					class="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-600"
 				>
-					{engine.id.toUpperCase()}
-					{#if selectedEngines.includes(engine.id)}
-						<X class="h-3 w-3" />
-					{:else}
-						<Plus class="h-3 w-3" />
-					{/if}
+					Повторить
 				</button>
-			{/each}
-		</div>
-	</Card>
+			</div>
+		</Card>
+	{/if}
 
 	<!-- Comparison Chart -->
-	<Card>
-		<h3 class="mb-4 text-lg font-semibold text-white">
-			{#if !$isLoading}{$_('comparison.performanceComparison')}{:else}Сравнение производительности{/if}
-		</h3>
-		<div class="h-64 w-full sm:h-80" bind:this={chartContainer}></div>
-	</Card>
+	{#if !isDataLoading && !loadingError}
+		<Card>
+			<h3 class="mb-4 text-lg font-semibold text-white">
+				{#if !$isLoading}{$_('comparison.performanceComparison')}{:else}Сравнение производительности{/if}
+			</h3>
+			<div class="h-64 w-full sm:h-80" bind:this={chartContainer}></div>
+		</Card>
+	{/if}
 
 	<!-- Metrics - Mobile Card View -->
-	<div class="space-y-4 md:hidden">
+	{#if !isDataLoading && !loadingError}
+		<div class="space-y-4 md:hidden">
 		<h3 class="text-lg font-semibold text-white">
 			{#if !$isLoading}{$_('comparison.metrics')}{:else}Метрики{/if}
 		</h3>
@@ -280,9 +331,11 @@
 				</div>
 			</div>
 		</Card>
-	</div>
+		</div>
+	{/if}
 
 	<!-- Metrics Table - Desktop -->
+	{#if !isDataLoading && !loadingError}
 	<Card class="hidden overflow-hidden p-0 md:block">
 		<div class="overflow-x-auto">
 			<table class="w-full text-left text-sm">
@@ -374,9 +427,11 @@
 			</table>
 		</div>
 	</Card>
+	{/if}
 
 	<!-- Ranking -->
-	<Card>
+	{#if !isDataLoading && !loadingError}
+		<Card>
 		<h3 class="mb-4 text-lg font-semibold text-white">
 			{#if !$isLoading}{$_('comparison.efficiencyRanking')}{:else}Рейтинг эффективности{/if}
 		</h3>
@@ -412,4 +467,5 @@
 			{/each}
 		</div>
 	</Card>
+	{/if}
 </div>
